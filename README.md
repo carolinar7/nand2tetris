@@ -8,7 +8,7 @@ By the end, I would have completed 12 projects:
 ## Hardware
 - [x] [Boolean Logic](https://www.nand2tetris.org/project01)
 - [x] [Boolean Arithmetic](https://www.nand2tetris.org/project02)
-- [ ] [Sequential Logic](https://www.nand2tetris.org/project03)
+- [x] [Sequential Logic](https://www.nand2tetris.org/project03)
 - [ ] [Machine Language](https://www.nand2tetris.org/project04)
 - [ ] [Computer Architecture](https://www.nand2tetris.org/project05)
 - [ ] [Assembler](https://www.nand2tetris.org/project06)
