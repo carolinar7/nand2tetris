@@ -9,33 +9,37 @@
 // This program only needs to handle arguments that satisfy
 // R0 >= 0, R1 >= 0, and R0*R1 < 32768.
 
+// Reset value in R2
 @0
 D = A
 @R2
 M = D
+// Store |R0| as a counter in R3
 @R0
 D = M
-@FIRSTJUMP
+@IS_NOT_NEGATIVE
 D; JGE
 @0
 D = A - D
-(FIRSTJUMP)
-@R3
+(IS_NOT_NEGATIVE)
+@counter
 M = D
-(THIRDJUMP)
-@R3
+// Multiplication logic: Add R1 value until R3 counter goes to zero to R2
+(LOOP)
+@counter
 D = M
-@SECONDJUMP
+@COUNTER_IS_ZERO
 D; JEQ
 @R1
 D = M
 @R2
 M = M + D
-@R3
+@counter
 M = M - 1
-@THIRDJUMP
+@LOOP
 0; JMP
-(SECONDJUMP)
+(COUNTER_IS_ZERO)
+// Check if R0 is negative and flip sign of R2 if it is
 @R0
 D = M
 @END
@@ -44,6 +48,7 @@ D; JGT
 D = A
 @R2
 M = D - M
+// Infinite loop
 (END)
 @END
 0; JMP
