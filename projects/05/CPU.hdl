@@ -39,5 +39,37 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // Determines whether to execute A or C instruction type
+    Mux16(a=instruction, b[0..14]=aluOut15Bit, sel=instruction[15], out=intoARegister);
+    // Always load to A register if A instruction
+    Mux(a=true, b=instruction[5], sel=instruction[15], out=loadToARegister);
+    // A register
+    ARegister(in=intoARegister, load=loadToARegister, out=registerAContent, out[0..14]=addressM);
+    // If C instruction, a register will determine whether to pull from A register or
+    // M input
+    Mux(a=false, b=instruction[12], sel=instruction[15], out=muxInput);
+    Mux16(a=registerAContent, b=inM, sel=muxInput, out=intoALU);
+    ALU(x=registerDContent, y=intoALU, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=outM, out=aluOut, out[0..14]=aluOut15Bit, zr=aluZero, ng=aluNegative);
+    // Don't load into register if A instruction
+    Mux(a=false, b=instruction[4], sel=instruction[15], out=loadToDRegister);
+    // D register
+    Mux16(a[0..14]=aluOut15Bit, b=aluOut, sel=aluNegative, out=intoDRegister);
+    DRegister(in=intoDRegister, load=loadToDRegister, out=registerDContent);
+    // Don't writeM if A instruction
+    Mux(a=false, b=instruction[3], sel=instruction[15], out=writeMSelect);
+    // writeM
+    Mux(a=false, b=true, sel=writeMSelect, out=writeM);
+    // Alu return value is greater than 0
+    Not(in=aluZero, out=notZero);
+    Not(in=aluNegative, out=notNegative);
+    And(a=notZero, b=notNegative, out=aluPositive);
+    // Determine to jump or not
+    And(a=aluNegative, b=instruction[2], out=isNegative);
+    And(a=aluZero, b=instruction[1], out=isZero);
+    And(a=aluPositive, b=instruction[0], out=isPositive);
+    Or(a=isNegative, b=isZero, out=orOut);
+    Or(a=orOut, b=isPositive, out=jump);
+    Mux(a=false, b=jump, sel=instruction[15], out=load);
+    // PC
+    PC(in=registerAContent, load=load, inc=true, reset=reset, out[0..14]=pc);
 }
