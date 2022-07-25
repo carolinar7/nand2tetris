@@ -10,7 +10,7 @@ By the end, I would have completed 12 projects:
 - [x] [Boolean Arithmetic](https://www.nand2tetris.org/project02)
 - [x] [Sequential Logic](https://www.nand2tetris.org/project03)
 - [x] [Machine Language](https://www.nand2tetris.org/project04)
-- [ ] [Computer Architecture](https://www.nand2tetris.org/project05)
+- [x] [Computer Architecture](https://www.nand2tetris.org/project05)
 - [ ] [Assembler](https://www.nand2tetris.org/project06)
 ## Software
 - [ ] [VM I: Stack Arithmetic](https://www.nand2tetris.org/project07)
