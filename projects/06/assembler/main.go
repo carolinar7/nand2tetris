@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -37,10 +36,12 @@ func main() {
 	}
 	defer fileOut.Close()
 	scanner := bufio.NewScanner(file)
+	lines := []string{}
 	for scanner.Scan() {
-		// TODO: Parse each line
-		if _, err := fileOut.WriteString(scanner.Text() + "\n"); err != nil {
-			fmt.Print("Issue writing to output file.")
-		}
+		lines = append(lines, scanner.Text())
+	}
+	// Remove white spaces in lines of file
+	for i := 0; i < len(lines); i++ {
+		lines[i] = strings.Replace(lines[i], " ", "", -1)
 	}
 }
