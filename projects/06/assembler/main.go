@@ -2,10 +2,24 @@ package main
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 )
+
+const ASSEMBLY_EXTENSION = "asm"
+
+type program struct {
+	lines []string
+}
+
+func (pg *program) removeSpaces() {
+	for i := 0; i < len(pg.lines); i++ {
+		pg.lines[i] = strings.Replace(pg.lines[i], " ", "", -1)
+	}
+}
 
 func getFileNameAndTypeFromPath(filePath string) (string, string) {
 	// Break down path
@@ -16,6 +30,24 @@ func getFileNameAndTypeFromPath(filePath string) (string, string) {
 	return fileStrAsSlice[0], fileStrAsSlice[1]
 }
 
+func getHackFileName(name string) string {
+	return name + ".hack"
+}
+
+func getOutputHackFileFromPath(filePath string) (*os.File, error) {
+	fileName, fileType := getFileNameAndTypeFromPath(filePath)
+	if fileType != ASSEMBLY_EXTENSION {
+		log.Fatal("File provided is not an .asm file type.")
+	}
+	fileOutName := getHackFileName(fileName)
+	fileOut, err := os.Create(fileOutName)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Could not make output file: %v", fileOutName))
+	}
+	defer fileOut.Close()
+	return fileOut, nil
+}
+
 func main() {
 	// Read input .asm file
 	filePath := os.Args[1]
@@ -24,24 +56,14 @@ func main() {
 		log.Fatalf("Could not read file %v.", err)
 	}
 	defer file.Close()
-	// Create output .hack file
-	fileName, fileType := getFileNameAndTypeFromPath(file.Name())
-	if fileType != "asm" {
-		log.Fatal("File provided is not an .asm file type.")
-	}
-	fileOutName := fileName + ".hack"
-	fileOut, err := os.Create(fileOutName)
-	if err != nil {
-		log.Fatalf("Could not make output file: %v", fileOutName)
-	}
-	defer fileOut.Close()
+	fileOut, err := getOutputHackFileFromPath(file.Name())
+	// TODO: REMOVE
+	fmt.Print(fileOut)
 	scanner := bufio.NewScanner(file)
-	lines := []string{}
+	// We want to capture each line individually from scanner
+	application := &program{[]string{}}
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		application.lines = append(application.lines, scanner.Text())
 	}
-	// Remove white spaces in lines of file
-	for i := 0; i < len(lines); i++ {
-		lines[i] = strings.Replace(lines[i], " ", "", -1)
-	}
+	application.removeSpaces()
 }
