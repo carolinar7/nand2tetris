@@ -15,10 +15,33 @@ type program struct {
 	lines []string
 }
 
-func (pg *program) removeSpaces() {
+func (pg *program) removeSpaces() *program {
 	for i := 0; i < len(pg.lines); i++ {
 		pg.lines[i] = strings.Replace(pg.lines[i], " ", "", -1)
 	}
+	return pg
+}
+
+func (pg *program) removeLineComments(p *parser) *program {
+	newLines := []string{}
+	for _, line := range pg.lines {
+		if !p.isComment(line) {
+			newLines = append(newLines, line)
+		}
+	}
+	pg.lines = newLines
+	return pg
+}
+
+func (pg *program) removeEmptyLines(p *parser) *program {
+	newLines := []string{}
+	for _, line := range pg.lines {
+		if !p.isBlankLine(line) {
+			newLines = append(newLines, line)
+		}
+	}
+	pg.lines = newLines
+	return pg
 }
 
 func getFileNameAndTypeFromPath(filePath string) (string, string) {
@@ -48,8 +71,22 @@ func getOutputHackFileFromPath(filePath string) (*os.File, error) {
 	return fileOut, nil
 }
 
+func addLabelsToSymbolTable(app *program, st *symbolTable, p *parser) {
+	lineCount := 0
+	for _, line := range app.lines {
+		if p.isLabel(line) {
+			st.add(p.parseLabel(line), lineCount)
+		} else {
+			lineCount++
+		}
+	}
+}
+
 func main() {
 	// Read input .asm file
+	if len(os.Args) != 2 {
+		log.Fatal("Incorrect number of inputs. Expected 2.")
+	}
 	filePath := os.Args[1]
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -62,8 +99,11 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	// We want to capture each line individually from scanner
 	application := &program{[]string{}}
+	applicationParser := &parser{}
 	for scanner.Scan() {
 		application.lines = append(application.lines, scanner.Text())
 	}
-	application.removeSpaces()
+	application.removeSpaces().removeLineComments(applicationParser).removeEmptyLines(applicationParser)
+	symTable := getSymbolTable()
+	addLabelsToSymbolTable(application, symTable, applicationParser)
 }

@@ -10,6 +10,10 @@ const (
 
 type parser struct{}
 
+func (p *parser) isBlankLine(line string) bool {
+	return len(line) == 0
+}
+
 func (p *parser) isLabel(line string) bool {
 	return len(line) > 0 && line[0] == '('
 }
@@ -26,8 +30,12 @@ func (p *parser) isCType(line string) bool {
 	return len(line) > 1 && !p.isComment(line) && !p.isLabel(line)
 }
 
+// Assumption that given files are always valid
+func (p *parser) parseLabel(line string) string {
+	return line[1 : len(line)-1]
+}
+
 // TODO: Implement parsing fuctions
-func (p *parser) parseLabel(line string) []string { return nil }
 func (p *parser) parseAType(line string) []string { return nil }
 func (p *parser) parseCType(line string) []string { return nil }
 
