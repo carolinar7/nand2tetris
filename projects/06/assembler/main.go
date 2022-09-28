@@ -22,10 +22,10 @@ func (pg *program) removeSpaces() *program {
 	return pg
 }
 
-func (pg *program) removeLineComments(p *parser) *program {
+func (pg *program) removeLineComments() *program {
 	newLines := []string{}
 	for _, line := range pg.lines {
-		if !p.isComment(line) {
+		if !isComment(line) {
 			newLines = append(newLines, line)
 		}
 	}
@@ -33,10 +33,10 @@ func (pg *program) removeLineComments(p *parser) *program {
 	return pg
 }
 
-func (pg *program) removeEmptyLines(p *parser) *program {
+func (pg *program) removeEmptyLines() *program {
 	newLines := []string{}
 	for _, line := range pg.lines {
-		if !p.isBlankLine(line) {
+		if !isBlankLine(line) {
 			newLines = append(newLines, line)
 		}
 	}
@@ -75,24 +75,24 @@ func getOutputHackFileFromPath(filePath string) (*os.File, error) {
 	return fileOut, nil
 }
 
-func addLabelsToSymbolTable(app *program, st *symbolTable, p *parser) {
+func addLabelsToSymbolTable(app *program, st *symbolTable) {
 	lineCount := 0
 	for _, line := range app.lines {
-		if p.isLabel(line) {
-			st.add(p.parseLabel(line), lineCount)
+		if isLabel(line) {
+			st.add(parseLabel(line), lineCount)
 		} else {
 			lineCount++
 		}
 	}
 }
 
-func createFieldsFromApplication(app *program, p *parser) *applicationFields {
+func createFieldsFromApplication(app *program) *applicationFields {
 	f := &applicationFields{}
 	for _, line := range app.lines {
-		if p.isAType(line) {
-			f.fields = append(f.fields, p.parseAType(line))
-		} else if p.isCType(line) {
-			f.fields = append(f.fields, p.parseCType(line))
+		if isAType(line) {
+			f.fields = append(f.fields, parseAType(line))
+		} else if isCType(line) {
+			f.fields = append(f.fields, parseCType(line))
 		}
 	}
 	return f
@@ -115,14 +115,13 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	// We want to capture each line individually from scanner
 	application := &program{[]string{}}
-	applicationParser := &parser{}
 	for scanner.Scan() {
 		application.lines = append(application.lines, scanner.Text())
 	}
-	application.removeSpaces().removeLineComments(applicationParser).removeEmptyLines(applicationParser)
+	application.removeSpaces().removeLineComments().removeEmptyLines()
 	symTable := getSymbolTable()
-	addLabelsToSymbolTable(application, symTable, applicationParser)
-	appFields := createFieldsFromApplication(application, applicationParser)
+	addLabelsToSymbolTable(application, symTable)
+	appFields := createFieldsFromApplication(application)
 	// TODO: REMOVE
 	fmt.Println(appFields.fields)
 }

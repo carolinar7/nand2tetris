@@ -19,28 +19,28 @@ const (
 
 type parser struct{}
 
-func (p *parser) isBlankLine(line string) bool {
+func isBlankLine(line string) bool {
 	return len(line) == 0
 }
 
-func (p *parser) isLabel(line string) bool {
+func isLabel(line string) bool {
 	return len(line) > 0 && line[0] == '('
 }
 
-func (p *parser) isComment(line string) bool {
+func isComment(line string) bool {
 	return len(line) > 1 && line[0] == '/' && line[1] == '/'
 }
 
-func (p *parser) isAType(line string) bool {
+func isAType(line string) bool {
 	return len(line) > 0 && line[0] == '@'
 }
 
-func (p *parser) isCType(line string) bool {
-	return len(line) > 1 && !p.isComment(line) && !p.isLabel(line)
+func isCType(line string) bool {
+	return len(line) > 1 && !isComment(line) && !isLabel(line)
 }
 
 // Assumption that given files are always valid
-func (p *parser) parseLabel(line string) string {
+func parseLabel(line string) string {
 	return line[1 : len(line)-1]
 }
 
@@ -54,19 +54,19 @@ func removeComments(line string) string {
 	return re.Split(line, -1)[0]
 }
 
-func (p *parser) parseAType(line string) []string {
+func parseAType(line string) []string {
 	return splitStringFromRegex(removeComments(line), ATypeRegexToRemove)[1:]
 }
 
-func (p *parser) parseCType(line string) []string {
+func parseCType(line string) []string {
 	return splitStringFromRegex(removeComments(line), CTypeRegexToRemove)
 }
 
-func (p *parser) parseLine(line string) (command, []string) {
-	if p.isAType(line) {
-		return AType, p.parseAType(line)
-	} else if p.isCType(line) {
-		return CType, p.parseCType(line)
+func parseLine(line string) (command, []string) {
+	if isAType(line) {
+		return AType, parseAType(line)
+	} else if isCType(line) {
+		return CType, parseCType(line)
 	} else {
 		return Ignore, nil
 	}
