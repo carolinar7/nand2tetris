@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -80,9 +81,27 @@ func addLabelsToSymbolTable(app *program, st *symbolTable) {
 	lineCount := 0
 	for _, line := range app.lines {
 		if isLabel(line) {
-			st.add(parseLabel(line), lineCount)
+			labelName := parseLabel(line)
+			if _, found := st.getValue(labelName); !found {
+				st.add(labelName, lineCount)
+			}
 		} else {
 			lineCount++
+		}
+	}
+}
+
+func addNewSymbolsToSymbolTable(app *program, st *symbolTable) {
+	n := 16
+	for _, line := range app.lines {
+		if isAType(line) {
+			symbolName := parseAType(line)[0]
+			_, found := st.getValue(symbolName)
+			_, isDigit := strconv.Atoi(symbolName)
+			if isDigit != nil && !found {
+				st.add(symbolName, n)
+				n++
+			}
 		}
 	}
 }
@@ -120,6 +139,7 @@ func main() {
 	application.removeSpaces().removeLineComments().removeEmptyLines()
 	symTable := getSymbolTable()
 	addLabelsToSymbolTable(application, symTable)
+	addNewSymbolsToSymbolTable(application, symTable)
 	appFields := createFieldsFromApplication(application)
 	// TODO: REMOVE
 	fmt.Println(appFields[0].cmd)
