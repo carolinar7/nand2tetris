@@ -5,9 +5,8 @@ import "regexp"
 type command string
 
 const (
-	AType  command = "atype"
-	CType  command = "ctype"
-	Ignore command = "ignore"
+	AType command = "atype"
+	CType command = "ctype"
 )
 
 const (
@@ -62,12 +61,11 @@ func parseCType(line string) []string {
 	return splitStringFromRegex(removeComments(line), CTypeRegexToRemove)
 }
 
-func parseLine(line string) (command, []string) {
+func parseLine(line string) *fieldTuple {
 	if isAType(line) {
-		return AType, parseAType(line)
+		return &fieldTuple{AType, parseAType(line)}
 	} else if isCType(line) {
-		return CType, parseCType(line)
-	} else {
-		return Ignore, nil
+		return &fieldTuple{CType, parseCType(line)}
 	}
+	return nil
 }

@@ -44,8 +44,9 @@ func (pg *program) removeEmptyLines() *program {
 	return pg
 }
 
-type applicationFields struct {
-	fields [][]string
+type fieldTuple struct {
+	cmd    command
+	fields []string
 }
 
 func getFileNameAndTypeFromPath(filePath string) (string, string) {
@@ -86,13 +87,11 @@ func addLabelsToSymbolTable(app *program, st *symbolTable) {
 	}
 }
 
-func createFieldsFromApplication(app *program) *applicationFields {
-	f := &applicationFields{}
+func createFieldsFromApplication(app *program) []*fieldTuple {
+	f := []*fieldTuple{}
 	for _, line := range app.lines {
-		if isAType(line) {
-			f.fields = append(f.fields, parseAType(line))
-		} else if isCType(line) {
-			f.fields = append(f.fields, parseCType(line))
+		if ft := parseLine(line); ft != nil {
+			f = append(f, ft)
 		}
 	}
 	return f
@@ -123,5 +122,5 @@ func main() {
 	addLabelsToSymbolTable(application, symTable)
 	appFields := createFieldsFromApplication(application)
 	// TODO: REMOVE
-	fmt.Println(appFields.fields)
+	fmt.Println(appFields[0].cmd)
 }
