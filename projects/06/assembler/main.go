@@ -95,7 +95,7 @@ func main() {
 	defer file.Close()
 	fileOut, err := getOutputHackFileFromPath(file.Name())
 	// TODO: REMOVE
-	fmt.Print(fileOut)
+	fmt.Println(fileOut)
 	scanner := bufio.NewScanner(file)
 	// We want to capture each line individually from scanner
 	application := &program{[]string{}}

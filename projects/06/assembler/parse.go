@@ -1,11 +1,20 @@
 package main
 
+import "regexp"
+
 type command string
 
 const (
 	AType  command = "atype"
 	CType  command = "ctype"
 	Ignore command = "ignore"
+)
+
+const (
+	// Characters to remove from A & C type regex
+	ATypeRegexToRemove   = "@"
+	CTypeRegexToRemove   = "=|;"
+	CommentRegexToRemove = "//[a-zA-Z0-9]*"
 )
 
 type parser struct{}
@@ -35,9 +44,23 @@ func (p *parser) parseLabel(line string) string {
 	return line[1 : len(line)-1]
 }
 
-// TODO: Implement parsing fuctions
-func (p *parser) parseAType(line string) []string { return nil }
-func (p *parser) parseCType(line string) []string { return nil }
+func splitStringFromRegex(line, regex string) []string {
+	re := regexp.MustCompile(regex)
+	return re.Split(line, -1)
+}
+
+func removeComments(line string) string {
+	re := regexp.MustCompile(CommentRegexToRemove)
+	return re.Split(line, -1)[0]
+}
+
+func (p *parser) parseAType(line string) []string {
+	return splitStringFromRegex(removeComments(line), ATypeRegexToRemove)[1:]
+}
+
+func (p *parser) parseCType(line string) []string {
+	return splitStringFromRegex(removeComments(line), CTypeRegexToRemove)
+}
 
 func (p *parser) parseLine(line string) (command, []string) {
 	if p.isAType(line) {
