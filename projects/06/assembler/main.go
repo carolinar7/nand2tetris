@@ -44,6 +44,10 @@ func (pg *program) removeEmptyLines(p *parser) *program {
 	return pg
 }
 
+type applicationFields struct {
+	fields [][]string
+}
+
 func getFileNameAndTypeFromPath(filePath string) (string, string) {
 	// Break down path
 	filePathAsSlice := strings.Split(filePath, "/")
@@ -82,6 +86,18 @@ func addLabelsToSymbolTable(app *program, st *symbolTable, p *parser) {
 	}
 }
 
+func createFieldsFromApplication(app *program, p *parser) *applicationFields {
+	f := &applicationFields{}
+	for _, line := range app.lines {
+		if p.isAType(line) {
+			f.fields = append(f.fields, p.parseAType(line))
+		} else if p.isCType(line) {
+			f.fields = append(f.fields, p.parseCType(line))
+		}
+	}
+	return f
+}
+
 func main() {
 	// Read input .asm file
 	if len(os.Args) != 2 {
@@ -106,4 +122,7 @@ func main() {
 	application.removeSpaces().removeLineComments(applicationParser).removeEmptyLines(applicationParser)
 	symTable := getSymbolTable()
 	addLabelsToSymbolTable(application, symTable, applicationParser)
+	appFields := createFieldsFromApplication(application, applicationParser)
+	// TODO: REMOVE
+	fmt.Println(appFields.fields)
 }
