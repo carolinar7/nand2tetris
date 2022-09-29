@@ -11,7 +11,7 @@ By the end, I would have completed 12 projects:
 - [x] [Sequential Logic](https://www.nand2tetris.org/project03)
 - [x] [Machine Language](https://www.nand2tetris.org/project04)
 - [x] [Computer Architecture](https://www.nand2tetris.org/project05)
-- [ ] [Assembler](https://www.nand2tetris.org/project06)
+- [x] [Assembler](https://www.nand2tetris.org/project06)
 ## Software
 - [ ] [VM I: Stack Arithmetic](https://www.nand2tetris.org/project07)
 - [ ] [VM II: Program Control](https://www.nand2tetris.org/project08)
