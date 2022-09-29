@@ -73,7 +73,6 @@ func getOutputHackFileFromPath(filePath string) (*os.File, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Could not make output file: %v", fileOutName))
 	}
-	defer fileOut.Close()
 	return fileOut, nil
 }
 
@@ -116,6 +115,12 @@ func createFieldsFromApplication(app *program) []*fieldTuple {
 	return f
 }
 
+func generateBinaryFromFields(ft []*fieldTuple, fo *os.File, st *symbolTable) {
+	for _, field := range ft {
+		fo.WriteString(getBinary(field, st))
+	}
+}
+
 func main() {
 	// Read input .asm file
 	if len(os.Args) != 2 {
@@ -128,8 +133,7 @@ func main() {
 	}
 	defer file.Close()
 	fileOut, err := getOutputHackFileFromPath(file.Name())
-	// TODO: REMOVE
-	fmt.Println(fileOut)
+	defer fileOut.Close()
 	scanner := bufio.NewScanner(file)
 	// We want to capture each line individually from scanner
 	application := &program{[]string{}}
@@ -141,6 +145,5 @@ func main() {
 	addLabelsToSymbolTable(application, symTable)
 	addNewSymbolsToSymbolTable(application, symTable)
 	appFields := createFieldsFromApplication(application)
-	// TODO: REMOVE
-	fmt.Println(appFields[0].cmd)
+	generateBinaryFromFields(appFields, fileOut, symTable)
 }

@@ -1,5 +1,11 @@
 package main
 
+import (
+	"fmt"
+	"log"
+	"strconv"
+)
+
 // AType => @[symbol]
 // CType => dest=comp;jump
 
@@ -54,4 +60,27 @@ var JUMP = map[string]string{
 	"JNE":  "101",
 	"JLE":  "110",
 	"JMP":  "111",
+}
+
+func getATypeBinary(field []string, st *symbolTable) string {
+	if val, found := st.getValue(field[0]); found {
+		return fmt.Sprintf("%.16b\n", val)
+	}
+	digit, err := strconv.Atoi(field[0])
+	if err != nil {
+		log.Fatal("Error: Could not convert non digit string")
+	}
+	return fmt.Sprintf("%.16b\n", digit)
+}
+
+// TODO: Implement
+func getCTypeBinary(field []string, st *symbolTable) string {
+	return "\n"
+}
+
+func getBinary(ft *fieldTuple, st *symbolTable) string {
+	if ft.cmd == AType {
+		return getATypeBinary(ft.fields, st)
+	}
+	return getCTypeBinary(ft.fields, st)
 }
