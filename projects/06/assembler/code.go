@@ -40,6 +40,19 @@ var COMP = map[string]string{
 	"D|M": "010101",
 }
 
+var COMP_A = map[string]bool{
+	"M":   true,
+	"!M":  true,
+	"-M":  true,
+	"M+1": true,
+	"M-1": true,
+	"D+M": true,
+	"D-M": true,
+	"M-D": true,
+	"D&M": true,
+	"D|M": true,
+}
+
 var DEST = map[string]string{
 	"null": "000",
 	"M":    "001",
@@ -62,6 +75,18 @@ var JUMP = map[string]string{
 	"JMP":  "111",
 }
 
+func compAIsSet(comp string) bool {
+	_, found := COMP_A[comp]
+	return found
+}
+
+func setA(comp string) string {
+	if compAIsSet(comp) {
+		return "1"
+	}
+	return "0"
+}
+
 func getATypeBinary(field []string, st *symbolTable) string {
 	if val, found := st.getValue(field[0]); found {
 		return fmt.Sprintf("%.16b\n", val)
@@ -73,9 +98,21 @@ func getATypeBinary(field []string, st *symbolTable) string {
 	return fmt.Sprintf("%.16b\n", digit)
 }
 
-// TODO: Implement
 func getCTypeBinary(field []string, st *symbolTable) string {
-	return "\n"
+	fieldLength := len(field)
+	if fieldLength == 3 {
+		// dest=comp;jump
+		return fmt.Sprintf("111%v%v%v%v\n", setA(field[1]), COMP[field[1]], DEST[field[0]], JUMP[field[2]])
+	} else {
+		_, found := JUMP[field[1]]
+		if found {
+			// comp;jump
+			return fmt.Sprintf("111%v%v%v%v\n", setA(field[0]), COMP[field[0]], DEST["null"], JUMP[field[1]])
+		} else {
+			// dest=comp
+			return fmt.Sprintf("111%v%v%v%v\n", setA(field[1]), COMP[field[1]], DEST[field[0]], JUMP["null"])
+		}
+	}
 }
 
 func getBinary(ft *fieldTuple, st *symbolTable) string {
