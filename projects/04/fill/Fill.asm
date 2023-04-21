@@ -55,8 +55,6 @@ M = D
 (POPULATE_SCREEN)
 // Check if pixel value is already set to desired state
 // don't populate if it is
-@pixelValue
-D = M
 @screenAddr
 A = M
 D = M
