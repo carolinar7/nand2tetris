@@ -24,7 +24,7 @@ func getASMFileName(fileName string) string {
 	return fileName + "." + ASM_EXTENSION
 }
 
-func readVMFileFromPath(filePath string) (*os.File, error) {
+func getASMFileFromPath(filePath string) (*os.File, error) {
 	fileName, fileType := getFileNameAndTypeFromPath(filePath)
 	if fileType != VM_EXTENSION {
 		log.Fatal("File Provided is not a .vm file type.")
@@ -48,5 +48,7 @@ func main() {
 		log.Fatalf("Could not read file %v.", err)
 	}
 	defer file.Close()
-	_, err = readVMFileFromPath(file.Name())
+	outputASMFile, err := getASMFileFromPath(file.Name())
+	defer outputASMFile.Close()
+	parseVMFile(file)
 }

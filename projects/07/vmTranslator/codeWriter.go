@@ -13,6 +13,8 @@
 // are segments within RAM. In addition, i represents a
 // numerical value to push or pop.
 
+package main
+
 // Arithmetic / Logical Commands
 // add
 
