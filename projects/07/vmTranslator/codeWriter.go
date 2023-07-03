@@ -16,6 +16,41 @@
 
 package main
 
+import (
+	"errors"
+	"fmt"
+	"log"
+	"os"
+)
+
+const ASM_EXTENSION = "asm"
+
+type CodeWriter struct {
+	outputFile *os.File
+}
+
+func getASMFileName(fileName string) string {
+	return fileName + "." + ASM_EXTENSION
+}
+
+func getOutputFileFromInputPath(filePath string) (*os.File, error) {
+	fileName, _ := getFileNameAndTypeFromPath(filePath)
+	fileOutName := getASMFileName(fileName)
+	fileOut, err := os.Create(fileOutName)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Could not make output file: %v.", fileOutName))
+	}
+	return fileOut, nil
+}
+
+func getCodeWriter(filePath string) *CodeWriter {
+	outputfile, err := getOutputFileFromInputPath(filePath)
+	if err != nil {
+		log.Fatal("Could not create outputfile")
+	}
+	return &CodeWriter{outputFile: outputfile}
+}
+
 // Arithmetic / Logical Commands
 // add
 

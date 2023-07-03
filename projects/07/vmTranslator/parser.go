@@ -17,6 +17,10 @@ const (
 	C_PUSH
 	C_POP
 )
+const VM_EXTENSION = "vm"
+
+type VMProgram []string
+type Command []string
 
 var CommandType = map[string]int{
 	"add":  C_ARITHMETIC,
@@ -31,9 +35,6 @@ var CommandType = map[string]int{
 	"push": C_PUSH,
 	"pop":  C_POP,
 }
-
-type VMProgram []string
-type Command []string
 
 type Parser struct {
 	vmLines  VMProgram
@@ -95,7 +96,20 @@ func parseVMFile(file *os.File) VMProgram {
 	return formatVMFile(file)
 }
 
+func getFileNameAndTypeFromPath(filePath string) (string, string) {
+	// Break down path
+	filePathAsSlice := strings.Split(filePath, "/")
+	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
+	// Break file by name and file type
+	fileStrAsSlice := strings.Split(fileStr, ".")
+	return fileStrAsSlice[0], fileStrAsSlice[1]
+}
+
 func openVMFile(filePath string) *os.File {
+	_, fileType := getFileNameAndTypeFromPath(filePath)
+	if fileType != VM_EXTENSION {
+		log.Fatal("File Provided is not a .vm file type.")
+	}
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatalf("Could not read file %v.", err)
