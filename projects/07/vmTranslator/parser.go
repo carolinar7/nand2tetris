@@ -5,11 +5,42 @@ package main
 
 import (
 	"bufio"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
-type VMProgram [][]string
+const (
+	// iota auto-increments from 0
+	C_ARITHMETIC int = iota
+	C_PUSH
+	C_POP
+)
+
+var CommandType = map[string]int{
+	"add":  C_ARITHMETIC,
+	"sub":  C_ARITHMETIC,
+	"neg":  C_ARITHMETIC,
+	"eq":   C_ARITHMETIC,
+	"gt":   C_ARITHMETIC,
+	"lt":   C_ARITHMETIC,
+	"and":  C_ARITHMETIC,
+	"or":   C_ARITHMETIC,
+	"not":  C_ARITHMETIC,
+	"push": C_PUSH,
+	"pop":  C_POP,
+}
+
+type VMProgram []string
+type Command []string
+
+type Parser struct {
+	vmLines  VMProgram
+	lineNum  int
+	command  Command
+	numLines int
+}
 
 func seperateEachLine(file *os.File) []string {
 	scanner := bufio.NewScanner(file)
@@ -50,18 +81,9 @@ func removeEmptyLines(vmLines []string) []string {
 	return vmLines
 }
 
-func removeSpaces(vmLines []string) VMProgram {
-	formattedVMLines := make([][]string, len(vmLines))
-	for i := 0; i < len(vmLines); i++ {
-		formattedVMLines[i] = strings.Split(vmLines[i], "")
-	}
-	return formattedVMLines
-}
-
 func formatVMLines(vmLines []string) VMProgram {
 	vmLines = removeLineComments(vmLines)
-	vmLines = removeEmptyLines(vmLines)
-	return removeSpaces(vmLines)
+	return removeEmptyLines(vmLines)
 }
 
 func formatVMFile(file *os.File) VMProgram {
@@ -71,4 +93,63 @@ func formatVMFile(file *os.File) VMProgram {
 
 func parseVMFile(file *os.File) VMProgram {
 	return formatVMFile(file)
+}
+
+func openVMFile(filePath string) *os.File {
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Fatalf("Could not read file %v.", err)
+	}
+	return file
+}
+
+func getParser(filePath string) *Parser {
+	file := openVMFile(filePath)
+	vmProgram := parseVMFile(file)
+	defer file.Close()
+	// lineNum is set to -1 because initially there is no command set.
+	// When the parser advances it will move to 0 and read the command,
+	// and so forth.
+	return &Parser{vmLines: vmProgram, lineNum: -1, numLines: len(vmProgram)}
+}
+
+func (parser *Parser) hasMoreCommands() bool {
+	return parser.lineNum < parser.numLines-1
+}
+
+func tokenizeCommand(command string) Command {
+	return strings.Split(command, " ")
+}
+
+func (parser *Parser) advance() {
+	parser.lineNum = parser.lineNum + 1
+	parser.command = tokenizeCommand(parser.vmLines[parser.lineNum])
+}
+
+func (parser *Parser) commandType() int {
+	if parser.command == nil || len(parser.command) == 0 {
+		log.Fatal("Attempted to access uninstantiated command")
+	}
+	return CommandType[parser.command[0]]
+}
+
+func (parser *Parser) arg1() string {
+	if parser.command == nil || len(parser.command) == 0 {
+		log.Fatal("Attempted to access uninstantiated command")
+	}
+	if CommandType[parser.command[0]] == C_ARITHMETIC {
+		return parser.command[0]
+	}
+	return parser.command[1]
+}
+
+func (parser *Parser) arg2() int {
+	if parser.command == nil || len(parser.command) < 2 {
+		log.Fatal("Attempted to access arg2 that does not exist")
+	}
+	arg2, err := strconv.Atoi(parser.command[2])
+	if err != nil {
+		log.Fatalf("Arg2 is not valid: %v", err)
+	}
+	return arg2
 }
