@@ -11,7 +11,8 @@
 // Where a segment can either represent: local, argument,
 // this, that, constant, static, temp, & pointer. These
 // are segments within RAM. In addition, i represents a
-// numerical value to push or pop.
+// numerical value that determines the shift off the respective
+// base pointer.
 
 package main
 
