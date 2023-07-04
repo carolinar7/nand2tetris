@@ -70,6 +70,20 @@ func getCodeWriter(filePath string) *CodeWriter {
 
 // not
 
+func (codeWriter *CodeWriter) writeArithmetic(command string) {
+	switch command {
+	case "add":
+	case "sub":
+	case "neg":
+	case "eq":
+	case "gt":
+	case "lt":
+	case "and":
+	case "or":
+	case "not":
+	}
+}
+
 // Memory Access Commands
 // local
 
