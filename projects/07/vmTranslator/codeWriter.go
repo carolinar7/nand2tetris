@@ -217,18 +217,62 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 }
 
 // Memory Access Commands
-// local
+func getLocalPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// argument
+func getArgumentPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// this
+func getThisPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// that
+func getThatPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// constant
+func getConstantPush(idx int) string {
+	constant := []string{}
+	// D=i
+	constant = append(constant, fmt.Sprintf("D=%d", idx))
+	// *SP=D
+	constant = append(constant, "@SP")
+	constant = append(constant, "M=D")
+	incrementStackPointer(constant)
+	return strings.Join(constant, "\n")
+}
 
-// static
+func getStaticPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// temp
+func getTempPushPop(pushPop int, idx int) string {
+	return ""
+}
 
-// pointer
+func getPointerPushPop(pushPop int, idx int) string {
+	return ""
+}
+
+func (codeWriter *CodeWriter) writePushPop(pushPop int, segment string, idx int) {
+	switch segment {
+	case "local":
+		codeWriter.writeStringToOutput(getLocalPushPop(pushPop, idx))
+	case "argument":
+		codeWriter.writeStringToOutput(getArgumentPushPop(pushPop, idx))
+	case "this":
+		codeWriter.writeStringToOutput(getThisPushPop(pushPop, idx))
+	case "that":
+		codeWriter.writeStringToOutput(getThatPushPop(pushPop, idx))
+	case "constant":
+		codeWriter.writeStringToOutput(getConstantPush(idx))
+	case "static":
+		codeWriter.writeStringToOutput(getStaticPushPop(pushPop, idx))
+	case "temp":
+		codeWriter.writeStringToOutput(getTempPushPop(pushPop, idx))
+	case "pointer":
+		codeWriter.writeStringToOutput(getPointerPushPop(pushPop, idx))
+	}
+}

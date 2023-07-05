@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -13,10 +12,13 @@ func main() {
 	}
 	filePath := os.Args[1]
 	parser := getParser(filePath)
+	codeWriter := getCodeWriter(filePath)
 	for parser.hasMoreCommands() {
 		parser.advance()
-		fmt.Println(parser.commandType(), parser.arg1())
+		if parser.commandType() == C_ARITHMETIC {
+			codeWriter.writeArithmetic(parser.arg1())
+		} else if parser.commandType() == C_POP || parser.commandType() == C_PUSH {
+			codeWriter.writePushPop(parser.commandType(), parser.arg1(), parser.arg2())
+		}
 	}
-	codeWriter := getCodeWriter(filePath)
-	codeWriter.outputFile.WriteString("Hello World")
 }
