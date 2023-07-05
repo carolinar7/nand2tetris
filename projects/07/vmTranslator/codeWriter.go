@@ -89,7 +89,14 @@ func getSub() string {
 	return strings.Join(sub, "\n")
 }
 
-// neg
+func getNeg() string {
+	neg := []string{}
+	// -*SP
+	neg = append(neg, "@SP")
+	neg = append(neg, "A=M")
+	neg = append(neg, "M=-M")
+	return strings.Join(neg, "\n")
+}
 
 // eq
 
@@ -110,6 +117,7 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "sub":
 		codeWriter.writeStringToOutput(getSub())
 	case "neg":
+		codeWriter.writeStringToOutput(getNeg())
 	case "eq":
 	case "gt":
 	case "lt":
