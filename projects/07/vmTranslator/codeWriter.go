@@ -184,7 +184,14 @@ func getOr() string {
 	return strings.Join(or, "\n")
 }
 
-// not
+func getNot() string {
+	not := []string{}
+	decrementStackPointer(not)
+	// M=!M
+	not = append(not, "M=!M")
+	incrementStackPointer(not)
+	return strings.Join(not, "\n")
+}
 
 func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	switch command {
@@ -205,6 +212,7 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "or":
 		codeWriter.writeStringToOutput(getOr())
 	case "not":
+		codeWriter.writeStringToOutput(getNot())
 	}
 }
 
