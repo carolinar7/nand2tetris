@@ -57,48 +57,86 @@ func getCodeWriter(filePath string) *CodeWriter {
 }
 
 // Arithmetic / Logical Commands
+// increment num clojure
+func getIncrementNum() func() int {
+	sum := -1
+	return func() int {
+		sum += 1
+		return sum
+	}
+}
+
+func decrementStackPointer(op []string) {
+	// SP--
+	op = append(op, "@SP")
+	op = append(op, "AM=M-1")
+}
+
+func incrementStackPointer(op []string) {
+	// SP++
+	op = append(op, "@SP")
+	op = append(op, "M=M+1")
+}
+
+func setComparison(op []string, comp string) {
+	getNum := getIncrementNum()
+	op = append(op, "M=M-D")
+	// Jump to label if conditional is true
+	op = append(op, fmt.Sprintf("@j%d", getNum()))
+	op = append(op, fmt.Sprintf("M;%s", comp))
+	// false
+	op = append(op, "M=0")
+	op = append(op, fmt.Sprintf("@j%dend", getNum()))
+	op = append(op, "0;JMP")
+	// true
+	op = append(op, fmt.Sprintf("(j%d)", getNum()))
+	op = append(op, "M=-1")
+	op = append(op, fmt.Sprintf("(j%dend)", getNum()))
+}
+
 func getAdd() string {
 	add := []string{}
+	decrementStackPointer(add)
 	// D=*SP
-	add = append(add, "@SP")
-	add = append(add, "A=M")
 	add = append(add, "D=M")
-	// SP--
-	add = append(add, "@SP")
-	add = append(add, "M=M-1")
+	decrementStackPointer(add)
 	// *SP=*SP+D
-	add = append(add, "@SP")
-	add = append(add, "A=M")
 	add = append(add, "M=D+M")
+	incrementStackPointer(add)
 	return strings.Join(add, "\n")
 }
 
 func getSub() string {
 	sub := []string{}
+	decrementStackPointer(sub)
 	// D=*SP
-	sub = append(sub, "@SP")
-	sub = append(sub, "A=M")
 	sub = append(sub, "D=M")
-	// SP--
-	sub = append(sub, "@SP")
-	sub = append(sub, "M=M-1")
+	decrementStackPointer(sub)
 	// *SP=*SP-D
-	sub = append(sub, "@SP")
-	sub = append(sub, "A=M")
 	sub = append(sub, "M=M-D")
+	incrementStackPointer(sub)
 	return strings.Join(sub, "\n")
 }
 
 func getNeg() string {
 	neg := []string{}
+	decrementStackPointer(neg)
 	// -*SP
-	neg = append(neg, "@SP")
-	neg = append(neg, "A=M")
 	neg = append(neg, "M=-M")
+	incrementStackPointer(neg)
 	return strings.Join(neg, "\n")
 }
 
-// eq
+func getEq() string {
+	eq := []string{}
+	decrementStackPointer(eq)
+	// D=*SP
+	eq = append(eq, "D=M")
+	decrementStackPointer(eq)
+	setComparison(eq, "JEQ")
+	incrementStackPointer(eq)
+	return strings.Join(eq, "\n")
+}
 
 // gt
 
@@ -119,6 +157,7 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "neg":
 		codeWriter.writeStringToOutput(getNeg())
 	case "eq":
+		codeWriter.writeStringToOutput(getEq())
 	case "gt":
 	case "lt":
 	case "and":
