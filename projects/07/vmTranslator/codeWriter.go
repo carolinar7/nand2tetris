@@ -73,7 +73,21 @@ func getAdd() string {
 	return strings.Join(add, "\n")
 }
 
-// sub
+func getSub() string {
+	sub := []string{}
+	// D=*SP
+	sub = append(sub, "@SP")
+	sub = append(sub, "A=M")
+	sub = append(sub, "D=M")
+	// SP--
+	sub = append(sub, "@SP")
+	sub = append(sub, "M=M-1")
+	// *SP=*SP-D
+	sub = append(sub, "@SP")
+	sub = append(sub, "A=M")
+	sub = append(sub, "M=M-D")
+	return strings.Join(sub, "\n")
+}
 
 // neg
 
@@ -94,6 +108,7 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "add":
 		codeWriter.writeStringToOutput(getAdd())
 	case "sub":
+		codeWriter.writeStringToOutput(getSub())
 	case "neg":
 	case "eq":
 	case "gt":
