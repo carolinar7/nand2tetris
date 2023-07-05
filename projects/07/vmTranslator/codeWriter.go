@@ -172,7 +172,17 @@ func getAnd() string {
 	return strings.Join(and, "\n")
 }
 
-// or
+func getOr() string {
+	or := []string{}
+	decrementStackPointer(or)
+	// D=*SP
+	or = append(or, "D=M")
+	decrementStackPointer(or)
+	// M=M&D
+	or = append(or, "M=D|M")
+	incrementStackPointer(or)
+	return strings.Join(or, "\n")
+}
 
 // not
 
@@ -193,6 +203,7 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "and":
 		codeWriter.writeStringToOutput(getAnd())
 	case "or":
+		codeWriter.writeStringToOutput(getOr())
 	case "not":
 	}
 }
