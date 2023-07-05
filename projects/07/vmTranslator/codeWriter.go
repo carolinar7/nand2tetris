@@ -138,7 +138,16 @@ func getEq() string {
 	return strings.Join(eq, "\n")
 }
 
-// gt
+func getGt() string {
+	gt := []string{}
+	decrementStackPointer(gt)
+	// D=*SP
+	gt = append(gt, "D=M")
+	decrementStackPointer(gt)
+	setComparison(gt, "JGT")
+	incrementStackPointer(gt)
+	return strings.Join(gt, "\n")
+}
 
 // lt
 
