@@ -21,12 +21,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 const ASM_EXTENSION = "asm"
 
 type CodeWriter struct {
 	outputFile *os.File
+}
+
+func (codeWriter *CodeWriter) writeStringToOutput(str string) {
+	codeWriter.outputFile.WriteString(str)
 }
 
 func getASMFileName(fileName string) string {
@@ -52,7 +57,21 @@ func getCodeWriter(filePath string) *CodeWriter {
 }
 
 // Arithmetic / Logical Commands
-// add
+func getAdd() string {
+	add := []string{}
+	// D=*SP
+	add = append(add, "@SP")
+	add = append(add, "A=M")
+	add = append(add, "D=M")
+	// SP--
+	add = append(add, "@SP")
+	add = append(add, "M=M-1")
+	// *SP=*SP+D
+	add = append(add, "@SP")
+	add = append(add, "A=M")
+	add = append(add, "M=D+M")
+	return strings.Join(add, "\n")
+}
 
 // sub
 
@@ -73,6 +92,7 @@ func getCodeWriter(filePath string) *CodeWriter {
 func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	switch command {
 	case "add":
+		codeWriter.writeStringToOutput(getAdd())
 	case "sub":
 	case "neg":
 	case "eq":
