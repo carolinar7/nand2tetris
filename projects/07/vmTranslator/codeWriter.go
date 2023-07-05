@@ -149,7 +149,16 @@ func getGt() string {
 	return strings.Join(gt, "\n")
 }
 
-// lt
+func getLt() string {
+	lt := []string{}
+	decrementStackPointer(lt)
+	// D=*SP
+	lt = append(lt, "D=M")
+	decrementStackPointer(lt)
+	setComparison(lt, "JLT")
+	incrementStackPointer(lt)
+	return strings.Join(lt, "\n")
+}
 
 // and
 
@@ -168,7 +177,9 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 	case "eq":
 		codeWriter.writeStringToOutput(getEq())
 	case "gt":
+		codeWriter.writeStringToOutput(getGt())
 	case "lt":
+		codeWriter.writeStringToOutput(getLt())
 	case "and":
 	case "or":
 	case "not":
