@@ -96,17 +96,17 @@ func parseVMFile(file *os.File) VMProgram {
 	return formatVMFile(file)
 }
 
-func getFileNameAndTypeFromPath(filePath string) (string, string) {
+func getFileNameAndTypeFromPath(filePath string) (string, string, string) {
 	// Break down path
 	filePathAsSlice := strings.Split(filePath, "/")
 	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
 	// Break file by name and file type
 	fileStrAsSlice := strings.Split(fileStr, ".")
-	return fileStrAsSlice[0], fileStrAsSlice[1]
+	return fileStrAsSlice[0], fileStrAsSlice[1], strings.Join(filePathAsSlice[:len(filePathAsSlice)-1], "/")
 }
 
 func openVMFile(filePath string) *os.File {
-	_, fileType := getFileNameAndTypeFromPath(filePath)
+	_, fileType, _ := getFileNameAndTypeFromPath(filePath)
 	if fileType != VM_EXTENSION {
 		log.Fatal("File Provided is not a .vm file type.")
 	}

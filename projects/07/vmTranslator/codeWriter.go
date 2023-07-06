@@ -28,19 +28,20 @@ const ASM_EXTENSION = "asm"
 
 type CodeWriter struct {
 	outputFile *os.File
+	num        int
 }
 
 func (codeWriter *CodeWriter) writeStringToOutput(str string) {
 	codeWriter.outputFile.WriteString(str)
 }
 
-func getASMFileName(fileName string) string {
-	return fileName + "." + ASM_EXTENSION
+func getASMFileName(path, fileName string) string {
+	return path + "/" + fileName + "." + ASM_EXTENSION
 }
 
 func getOutputFileFromInputPath(filePath string) (*os.File, error) {
-	fileName, _ := getFileNameAndTypeFromPath(filePath)
-	fileOutName := getASMFileName(fileName)
+	fileName, _, path := getFileNameAndTypeFromPath(filePath)
+	fileOutName := getASMFileName(path, fileName)
 	fileOut, err := os.Create(fileOutName)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Could not make output file: %v.", fileOutName))
@@ -53,144 +54,149 @@ func getCodeWriter(filePath string) *CodeWriter {
 	if err != nil {
 		log.Fatal("Could not create outputfile")
 	}
-	return &CodeWriter{outputFile: outputfile}
+	return &CodeWriter{outputFile: outputfile, num: 0}
+}
+
+func joinStrings(strs []string) string {
+	str := strings.Join(strs, "\n")
+	return fmt.Sprintf("%s\n", str)
 }
 
 // Arithmetic / Logical Commands
-// increment num clojure
-func getIncrementNum() func() int {
-	sum := -1
-	return func() int {
-		sum += 1
-		return sum
-	}
-}
-
-func decrementStackPointer(op []string) {
+func decrementStackPointer(op []string) []string {
 	// SP--
 	op = append(op, "@SP")
 	op = append(op, "AM=M-1")
+	return op
 }
 
-func incrementStackPointer(op []string) {
+func incrementStackPointer(op []string) []string {
 	// SP++
 	op = append(op, "@SP")
 	op = append(op, "M=M+1")
+	return op
 }
 
-func setComparison(op []string, comp string) {
-	getNum := getIncrementNum()
-	op = append(op, "M=M-D")
+var num int = 0
+
+func setComparison(op []string, comp string) []string {
+	op = append(op, "D=M-D")
 	// Jump to label if conditional is true
-	op = append(op, fmt.Sprintf("@j%d", getNum()))
-	op = append(op, fmt.Sprintf("M;%s", comp))
+	op = append(op, fmt.Sprintf("@j%d", num))
+	op = append(op, fmt.Sprintf("D;%s", comp))
 	// false
+	op = append(op, "@SP")
+	op = append(op, "A=M")
 	op = append(op, "M=0")
-	op = append(op, fmt.Sprintf("@j%dend", getNum()))
+	op = append(op, fmt.Sprintf("@j%dend", num))
 	op = append(op, "0;JMP")
 	// true
-	op = append(op, fmt.Sprintf("(j%d)", getNum()))
+	op = append(op, fmt.Sprintf("(j%d)", num))
+	op = append(op, "@SP")
+	op = append(op, "A=M")
 	op = append(op, "M=-1")
-	op = append(op, fmt.Sprintf("(j%dend)", getNum()))
+	op = append(op, fmt.Sprintf("(j%dend)", num))
+	num++
+	return op
 }
 
 func getAdd() string {
 	add := []string{}
-	decrementStackPointer(add)
+	add = decrementStackPointer(add[:])
 	// D=*SP
 	add = append(add, "D=M")
-	decrementStackPointer(add)
+	add = decrementStackPointer(add)
 	// *SP=*SP+D
 	add = append(add, "M=D+M")
-	incrementStackPointer(add)
-	return strings.Join(add, "\n")
+	add = incrementStackPointer(add[:])
+	return joinStrings(add)
 }
 
 func getSub() string {
 	sub := []string{}
-	decrementStackPointer(sub)
+	sub = decrementStackPointer(sub)
 	// D=*SP
 	sub = append(sub, "D=M")
-	decrementStackPointer(sub)
+	sub = decrementStackPointer(sub)
 	// *SP=*SP-D
 	sub = append(sub, "M=M-D")
-	incrementStackPointer(sub)
-	return strings.Join(sub, "\n")
+	sub = incrementStackPointer(sub)
+	return joinStrings(sub)
 }
 
 func getNeg() string {
 	neg := []string{}
-	decrementStackPointer(neg)
+	neg = decrementStackPointer(neg)
 	// -*SP
 	neg = append(neg, "M=-M")
-	incrementStackPointer(neg)
-	return strings.Join(neg, "\n")
+	neg = incrementStackPointer(neg)
+	return joinStrings(neg)
 }
 
 func getEq() string {
 	eq := []string{}
-	decrementStackPointer(eq)
+	eq = decrementStackPointer(eq)
 	// D=*SP
 	eq = append(eq, "D=M")
-	decrementStackPointer(eq)
-	setComparison(eq, "JEQ")
-	incrementStackPointer(eq)
-	return strings.Join(eq, "\n")
+	eq = decrementStackPointer(eq)
+	eq = setComparison(eq, "JEQ")
+	eq = incrementStackPointer(eq)
+	return joinStrings(eq)
 }
 
 func getGt() string {
 	gt := []string{}
-	decrementStackPointer(gt)
+	gt = decrementStackPointer(gt)
 	// D=*SP
 	gt = append(gt, "D=M")
-	decrementStackPointer(gt)
-	setComparison(gt, "JGT")
-	incrementStackPointer(gt)
-	return strings.Join(gt, "\n")
+	gt = decrementStackPointer(gt)
+	gt = setComparison(gt, "JGT")
+	gt = incrementStackPointer(gt)
+	return joinStrings(gt)
 }
 
 func getLt() string {
 	lt := []string{}
-	decrementStackPointer(lt)
+	lt = decrementStackPointer(lt)
 	// D=*SP
 	lt = append(lt, "D=M")
-	decrementStackPointer(lt)
-	setComparison(lt, "JLT")
-	incrementStackPointer(lt)
-	return strings.Join(lt, "\n")
+	lt = decrementStackPointer(lt)
+	lt = setComparison(lt, "JLT")
+	lt = incrementStackPointer(lt)
+	return joinStrings(lt)
 }
 
 func getAnd() string {
 	and := []string{}
-	decrementStackPointer(and)
+	and = decrementStackPointer(and)
 	// D=*SP
 	and = append(and, "D=M")
-	decrementStackPointer(and)
+	and = decrementStackPointer(and)
 	// M=M&D
 	and = append(and, "M=D&M")
-	incrementStackPointer(and)
-	return strings.Join(and, "\n")
+	and = incrementStackPointer(and)
+	return joinStrings(and)
 }
 
 func getOr() string {
 	or := []string{}
-	decrementStackPointer(or)
+	or = decrementStackPointer(or)
 	// D=*SP
 	or = append(or, "D=M")
-	decrementStackPointer(or)
+	or = decrementStackPointer(or)
 	// M=M&D
 	or = append(or, "M=D|M")
-	incrementStackPointer(or)
-	return strings.Join(or, "\n")
+	or = incrementStackPointer(or)
+	return joinStrings(or)
 }
 
 func getNot() string {
 	not := []string{}
-	decrementStackPointer(not)
+	not = decrementStackPointer(not)
 	// M=!M
 	not = append(not, "M=!M")
-	incrementStackPointer(not)
-	return strings.Join(not, "\n")
+	not = incrementStackPointer(not)
+	return joinStrings(not)
 }
 
 func (codeWriter *CodeWriter) writeArithmetic(command string) {
@@ -236,12 +242,14 @@ func getThatPushPop(pushPop int, idx int) string {
 func getConstantPush(idx int) string {
 	constant := []string{}
 	// D=i
-	constant = append(constant, fmt.Sprintf("D=%d", idx))
+	constant = append(constant, fmt.Sprintf("@%d", idx))
+	constant = append(constant, "D=A")
 	// *SP=D
 	constant = append(constant, "@SP")
+	constant = append(constant, "A=M")
 	constant = append(constant, "M=D")
-	incrementStackPointer(constant)
-	return strings.Join(constant, "\n")
+	constant = incrementStackPointer(constant)
+	return joinStrings(constant)
 }
 
 func getStaticPushPop(pushPop int, idx int) string {
