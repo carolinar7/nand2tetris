@@ -245,32 +245,51 @@ func segmentPointersPush(segment string, idx int) string {
 	return joinStrings(push)
 }
 
+func segmentPointerPop(segment string, idx int) string {
+	pop := []string{}
+	// D=i
+	pop = append(pop, fmt.Sprintf("@%d", idx))
+	pop = append(pop, "D=A")
+	// addr=Seg+i
+	pop = append(pop, fmt.Sprintf("@%s", segment))
+	pop = append(pop, "D=D+M")
+	pop = append(pop, "@R13")
+	pop = append(pop, "M=D")
+	pop = decrementStackPointer(pop)
+	// *addr=*SP
+	pop = append(pop, "D=M")
+	pop = append(pop, "@R13")
+	pop = append(pop, "A=M")
+	pop = append(pop, "M=D")
+	return joinStrings(pop)
+}
+
 func getLocalPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(LOCAL_ABBR, idx)
 	}
-	return ""
+	return segmentPointerPop(LOCAL_ABBR, idx)
 }
 
 func getArgumentPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(ARGUMENT_ABBR, idx)
 	}
-	return ""
+	return segmentPointerPop(ARGUMENT_ABBR, idx)
 }
 
 func getThisPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(THIS_ABBR, idx)
 	}
-	return ""
+	return segmentPointerPop(THIS_ABBR, idx)
 }
 
 func getThatPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(THAT_ABBR, idx)
 	}
-	return ""
+	return segmentPointerPop(THAT_ABBR, idx)
 }
 
 func getConstantPush(idx int) string {
