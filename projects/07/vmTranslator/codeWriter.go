@@ -28,7 +28,6 @@ const ASM_EXTENSION = "asm"
 
 type CodeWriter struct {
 	outputFile *os.File
-	num        int
 }
 
 func (codeWriter *CodeWriter) writeStringToOutput(str string) {
@@ -54,7 +53,7 @@ func getCodeWriter(filePath string) *CodeWriter {
 	if err != nil {
 		log.Fatal("Could not create outputfile")
 	}
-	return &CodeWriter{outputFile: outputfile, num: 0}
+	return &CodeWriter{outputFile: outputfile}
 }
 
 func joinStrings(strs []string) string {
@@ -223,19 +222,54 @@ func (codeWriter *CodeWriter) writeArithmetic(command string) {
 }
 
 // Memory Access Commands
+const LOCAL_ABBR = "LCL"
+const ARGUMENT_ABBR = "ARG"
+const THIS_ABBR = "THIS"
+const THAT_ABBR = "THAT"
+
+func segmentPointersPush(segment string, idx int) string {
+	push := []string{}
+	// D=i
+	push = append(push, fmt.Sprintf("@%d", idx))
+	push = append(push, "D=A")
+	// addr=Seg+i
+	push = append(push, fmt.Sprintf("@%s", segment))
+	push = append(push, "A=D+M")
+	// D=*addr
+	push = append(push, "D=M")
+	// *SP=D
+	push = append(push, "@SP")
+	push = append(push, "A=M")
+	push = append(push, "M=D")
+	push = incrementStackPointer(push)
+	return joinStrings(push)
+}
+
 func getLocalPushPop(pushPop int, idx int) string {
+	if pushPop == C_PUSH {
+		return segmentPointersPush(LOCAL_ABBR, idx)
+	}
 	return ""
 }
 
 func getArgumentPushPop(pushPop int, idx int) string {
+	if pushPop == C_PUSH {
+		return segmentPointersPush(ARGUMENT_ABBR, idx)
+	}
 	return ""
 }
 
 func getThisPushPop(pushPop int, idx int) string {
+	if pushPop == C_PUSH {
+		return segmentPointersPush(THIS_ABBR, idx)
+	}
 	return ""
 }
 
 func getThatPushPop(pushPop int, idx int) string {
+	if pushPop == C_PUSH {
+		return segmentPointersPush(THAT_ABBR, idx)
+	}
 	return ""
 }
 
