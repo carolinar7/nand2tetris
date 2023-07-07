@@ -306,27 +306,27 @@ func (cw *CodeWriter) getConstantPush(idx int) string {
 }
 
 func pushStatic(idx int, fileName string) string {
-	pushStatic := []string{}
+	push := []string{}
 	// D=fileName.i
-	pushStatic = append(pushStatic, fmt.Sprintf("@%s.%d", fileName, idx))
-	pushStatic = append(pushStatic, "D=M")
+	push = append(push, fmt.Sprintf("@%s.%d", fileName, idx))
+	push = append(push, "D=M")
 	// *SP=D
-	pushStatic = append(pushStatic, "@SP")
-	pushStatic = append(pushStatic, "A=M")
-	pushStatic = append(pushStatic, "M=D")
-	pushStatic = incrementStackPointer(pushStatic)
-	return joinStrings(pushStatic)
+	push = append(push, "@SP")
+	push = append(push, "A=M")
+	push = append(push, "M=D")
+	push = incrementStackPointer(push)
+	return joinStrings(push)
 }
 
 func popStatic(idx int, fileName string) string {
-	popStatic := []string{}
-	popStatic = decrementStackPointer(popStatic)
+	pop := []string{}
+	pop = decrementStackPointer(pop)
 	// D=*SP
-	popStatic = append(popStatic, "D=M")
+	pop = append(pop, "D=M")
 	// fileName.i=D
-	popStatic = append(popStatic, fmt.Sprintf("@%s.%d", fileName, idx))
-	popStatic = append(popStatic, "M=D")
-	return joinStrings(popStatic)
+	pop = append(pop, fmt.Sprintf("@%s.%d", fileName, idx))
+	pop = append(pop, "M=D")
+	return joinStrings(pop)
 }
 
 func (cw *CodeWriter) getStaticPushPop(pushPop int, idx int) string {
@@ -336,8 +336,48 @@ func (cw *CodeWriter) getStaticPushPop(pushPop int, idx int) string {
 	return popStatic(idx, cw.fileName)
 }
 
+func pushTemp(idx int) string {
+	push := []string{}
+	// D=i
+	push = append(push, fmt.Sprintf("@%d", idx))
+	push = append(push, "D=A")
+	// addr=Seg+i
+	push = append(push, "@5")
+	push = append(push, "A=D+M")
+	// D=*addr
+	push = append(push, "D=M")
+	// *SP=D
+	push = append(push, "@SP")
+	push = append(push, "A=M")
+	push = append(push, "M=D")
+	push = incrementStackPointer(push)
+	return joinStrings(push)
+}
+
+func popTemp(idx int) string {
+	pop := []string{}
+	// D=i
+	pop = append(pop, fmt.Sprintf("@%d", idx))
+	pop = append(pop, "D=A")
+	// addr=Seg+i
+	pop = append(pop, "@5")
+	pop = append(pop, "D=D+M")
+	pop = append(pop, "@R13")
+	pop = append(pop, "M=D")
+	pop = decrementStackPointer(pop)
+	// *addr=*SP
+	pop = append(pop, "D=M")
+	pop = append(pop, "@R13")
+	pop = append(pop, "A=M")
+	pop = append(pop, "M=D")
+	return joinStrings(pop)
+}
+
 func (cw *CodeWriter) getTempPushPop(pushPop int, idx int) string {
-	return ""
+	if pushPop == C_PUSH {
+		return pushTemp(idx)
+	}
+	return popTemp(idx)
 }
 
 func (cw *CodeWriter) getPointerPushPop(pushPop int, idx int) string {
