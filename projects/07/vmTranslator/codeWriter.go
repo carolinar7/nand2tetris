@@ -380,8 +380,44 @@ func (cw *CodeWriter) getTempPushPop(pushPop int, idx int) string {
 	return popTemp(idx)
 }
 
+const THIS = 0
+const THAT = 1
+
+func pushPointer(idx int, pt string) string {
+	push := []string{}
+	// D=THIS/THAT
+	push = append(push, fmt.Sprintf("@%s", pt))
+	push = append(push, "D=M")
+	// *SP=D
+	push = append(push, "@SP")
+	push = append(push, "A=M")
+	push = append(push, "M=D")
+	push = incrementStackPointer(push)
+	return joinStrings(push)
+}
+
+func popPointer(idx int, pt string) string {
+	pop := []string{}
+	pop = decrementStackPointer(pop)
+	// D=*SP
+	pop = append(pop, "D=M")
+	// THIS/THAT=D
+	pop = append(pop, fmt.Sprintf("@%s", pt))
+	pop = append(pop, "M=D")
+	return joinStrings(pop)
+}
+
 func (cw *CodeWriter) getPointerPushPop(pushPop int, idx int) string {
-	return ""
+	var pointerType string
+	if idx == THIS {
+		pointerType = "THIS"
+	} else if idx == THAT {
+		pointerType = "THAT"
+	}
+	if pushPop == C_PUSH {
+		return pushPointer(idx, pointerType)
+	}
+	return popPointer(idx, pointerType)
 }
 
 func (cw *CodeWriter) writePushPop(pushPop int, segment string, idx int) {
