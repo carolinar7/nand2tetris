@@ -361,7 +361,7 @@ func popTemp(idx int) string {
 	pop = append(pop, "D=A")
 	// addr=Seg+i
 	pop = append(pop, "@5")
-	pop = append(pop, "D=D+M")
+	pop = append(pop, "D=D+A")
 	pop = append(pop, "@R13")
 	pop = append(pop, "M=D")
 	pop = decrementStackPointer(pop)
