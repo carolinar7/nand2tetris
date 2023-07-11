@@ -38,16 +38,14 @@ func (codeWriter *CodeWriter) writeStringToOutput(str string) {
 
 func getFileNameAndTypeFromPath(filePath string) (string, string, string) {
 	// Break down path
-	filePathAsSlice := strings.Split(filePath, "\\")
+	filePathAsSlice := strings.Split(filePath, "/")
 	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
 	// Break file by name and file type
 	fileStrAsSlice := strings.Split(fileStr, ".")
-	fmt.Println(filePathAsSlice)
 	return fileStrAsSlice[0], fileStrAsSlice[1], strings.Join(filePathAsSlice[:len(filePathAsSlice)-1], "/")
 }
 
 func getASMFileName(path, fileName string) string {
-	fmt.Println(path, "hey", fileName)
 	return path + "/" + fileName + ASM_EXTENSION
 }
 
@@ -354,7 +352,7 @@ func pushTemp(idx int) string {
 	push = append(push, "D=A")
 	// addr=Seg+i
 	push = append(push, "@5")
-	push = append(push, "A=D+M")
+	push = append(push, "A=D+A")
 	// D=*addr
 	push = append(push, "D=M")
 	// *SP=D
