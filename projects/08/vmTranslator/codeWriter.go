@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-const ASM_EXTENSION = "asm"
+const ASM_EXTENSION = ".asm"
 
 type CodeWriter struct {
 	outputFile   *os.File
@@ -36,8 +36,19 @@ func (codeWriter *CodeWriter) writeStringToOutput(str string) {
 	codeWriter.outputFile.WriteString(str)
 }
 
+func getFileNameAndTypeFromPath(filePath string) (string, string, string) {
+	// Break down path
+	filePathAsSlice := strings.Split(filePath, "\\")
+	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
+	// Break file by name and file type
+	fileStrAsSlice := strings.Split(fileStr, ".")
+	fmt.Println(filePathAsSlice)
+	return fileStrAsSlice[0], fileStrAsSlice[1], strings.Join(filePathAsSlice[:len(filePathAsSlice)-1], "/")
+}
+
 func getASMFileName(path, fileName string) string {
-	return path + "/" + fileName + "." + ASM_EXTENSION
+	fmt.Println(path, "hey", fileName)
+	return path + "/" + fileName + ASM_EXTENSION
 }
 
 func getOutputFileFromInputPath(filePath string) (*os.File, string, error) {
@@ -45,15 +56,15 @@ func getOutputFileFromInputPath(filePath string) (*os.File, string, error) {
 	fileOutName := getASMFileName(path, fileName)
 	fileOut, err := os.Create(fileOutName)
 	if err != nil {
-		return nil, "", errors.New(fmt.Sprintf("Could not make output file: %v.", fileOutName))
+		return nil, "", errors.New(fmt.Sprintf("Could not make output file: %v", fileOutName))
 	}
 	return fileOut, fileName, nil
 }
 
-func getCodeWriter(filePath string) *CodeWriter {
-	outputfile, fileName, err := getOutputFileFromInputPath(filePath)
+func getCodeWriter(file *os.File) *CodeWriter {
+	outputfile, fileName, err := getOutputFileFromInputPath(file.Name())
 	if err != nil {
-		log.Fatal("Could not create outputfile")
+		log.Fatalf("%v", err)
 	}
 	return &CodeWriter{outputFile: outputfile, incrementNum: 0, fileName: fileName}
 }
