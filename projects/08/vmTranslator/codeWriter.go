@@ -36,13 +36,16 @@ func (codeWriter *CodeWriter) writeStringToOutput(str string) {
 	codeWriter.outputFile.WriteString(str)
 }
 
-func getFileNameAndTypeFromPath(filePath string) (string, string, string) {
+func getFileNameAndDirectory(filePath string) (string, string) {
 	// Break down path
 	filePathAsSlice := strings.Split(filePath, "/")
 	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
 	// Break file by name and file type
 	fileStrAsSlice := strings.Split(fileStr, ".")
-	return fileStrAsSlice[0], fileStrAsSlice[1], strings.Join(filePathAsSlice[:len(filePathAsSlice)-1], "/")
+	if isDir(filePath) {
+		return fileStrAsSlice[0], filePath
+	}
+	return fileStrAsSlice[0], strings.Join(filePathAsSlice[:len(filePathAsSlice)-1], "/")
 }
 
 func getASMFileName(path, fileName string) string {
@@ -50,7 +53,7 @@ func getASMFileName(path, fileName string) string {
 }
 
 func getOutputFileFromInputPath(filePath string) (*os.File, string, error) {
-	fileName, _, path := getFileNameAndTypeFromPath(filePath)
+	fileName, path := getFileNameAndDirectory(filePath)
 	fileOutName := getASMFileName(path, fileName)
 	fileOut, err := os.Create(fileOutName)
 	if err != nil {
@@ -59,8 +62,8 @@ func getOutputFileFromInputPath(filePath string) (*os.File, string, error) {
 	return fileOut, fileName, nil
 }
 
-func getCodeWriter(file *os.File) *CodeWriter {
-	outputfile, fileName, err := getOutputFileFromInputPath(file.Name())
+func getCodeWriter(filePath string) *CodeWriter {
+	outputfile, fileName, err := getOutputFileFromInputPath(filePath)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}

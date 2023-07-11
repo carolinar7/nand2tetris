@@ -48,23 +48,23 @@ func getFiles(filePath string) []*os.File {
 	return getFile(filePath)
 }
 
-func runFile(file *os.File) {
+func runFile(file *os.File, cw *CodeWriter) {
 	parser := getParser(file)
-	codeWriter := getCodeWriter(file)
 	for parser.hasMoreCommands() {
 		parser.advance()
 		if parser.commandType() == C_ARITHMETIC {
-			codeWriter.writeArithmetic(parser.arg1())
+			cw.writeArithmetic(parser.arg1())
 		} else if parser.commandType() == C_POP || parser.commandType() == C_PUSH {
-			codeWriter.writePushPop(parser.commandType(), parser.arg1(), parser.arg2())
+			cw.writePushPop(parser.commandType(), parser.arg1(), parser.arg2())
 		}
 	}
 }
 
 func runFiles(filePath string) {
 	files := getFiles(filePath)
+	codeWriter := getCodeWriter(filePath)
 	for _, file := range files {
-		runFile(file)
+		runFile(file, codeWriter)
 	}
 }
 
