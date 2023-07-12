@@ -547,6 +547,17 @@ func (cw *CodeWriter) writeLabel(label string) {
 	cw.writeStringToOutput(getLabel(label))
 }
 
+func getGoto(label string) string {
+	gt := []string{}
+	gt = append(gt, fmt.Sprintf("@%s", label))
+	gt = append(gt, fmt.Sprintf("0;JMP"))
+	return joinStrings(gt)
+}
+
+func (cw *CodeWriter) writeGoto(label string) {
+	cw.writeStringToOutput(getLabel(label))
+}
+
 func (cw *CodeWriter) writeCall(functionName string, numArgs int) {
 	returnAddress := getCallReturnAddress(functionName, cw.incrementNum())
 	cw.writeStringToOutput(getCall(returnAddress, numArgs, functionName))

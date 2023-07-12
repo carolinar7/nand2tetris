@@ -58,6 +58,8 @@ func runFile(file *os.File, cw *CodeWriter) {
 			cw.writePushPop(parser.commandType(), parser.arg1(), parser.arg2())
 		} else if parser.commandType() == C_LABEL {
 			cw.writeLabel(parser.arg1())
+		} else if parser.commandType() == C_GOTO {
+			cw.writeGoto(parser.arg1())
 		}
 	}
 }
