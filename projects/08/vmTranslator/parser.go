@@ -16,23 +16,35 @@ const (
 	C_ARITHMETIC int = iota
 	C_PUSH
 	C_POP
+	C_GOTO
+	C_IFGOTO
+	C_LABEL
+	C_CALL
+	C_FUNCTION
+	C_RETURN
 )
 
 type VMProgram []string
 type Command []string
 
 var CommandType = map[string]int{
-	"add":  C_ARITHMETIC,
-	"sub":  C_ARITHMETIC,
-	"neg":  C_ARITHMETIC,
-	"eq":   C_ARITHMETIC,
-	"gt":   C_ARITHMETIC,
-	"lt":   C_ARITHMETIC,
-	"and":  C_ARITHMETIC,
-	"or":   C_ARITHMETIC,
-	"not":  C_ARITHMETIC,
-	"push": C_PUSH,
-	"pop":  C_POP,
+	"add":      C_ARITHMETIC,
+	"sub":      C_ARITHMETIC,
+	"neg":      C_ARITHMETIC,
+	"eq":       C_ARITHMETIC,
+	"gt":       C_ARITHMETIC,
+	"lt":       C_ARITHMETIC,
+	"and":      C_ARITHMETIC,
+	"or":       C_ARITHMETIC,
+	"not":      C_ARITHMETIC,
+	"push":     C_PUSH,
+	"pop":      C_POP,
+	"goto":     C_GOTO,
+	"if-goto":  C_IFGOTO,
+	"label":    C_LABEL,
+	"call":     C_CALL,
+	"function": C_FUNCTION,
+	"return":   C_RETURN,
 }
 
 type Parser struct {
@@ -128,14 +140,14 @@ func (parser *Parser) arg1() string {
 	if parser.command == nil || len(parser.command) == 0 {
 		log.Fatal("Attempted to access uninstantiated command")
 	}
-	if CommandType[parser.command[0]] == C_ARITHMETIC {
+	if CommandType[parser.command[0]] == C_ARITHMETIC || CommandType[parser.command[0]] == C_RETURN {
 		return parser.command[0]
 	}
 	return parser.command[1]
 }
 
 func (parser *Parser) arg2() int {
-	if parser.command == nil || len(parser.command) < 2 {
+	if parser.command == nil || len(parser.command) < 3 {
 		log.Fatal("Attempted to access arg2 that does not exist")
 	}
 	arg2, err := strconv.Atoi(parser.command[2])
