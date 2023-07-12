@@ -539,6 +539,14 @@ func getCall(returnAddress string, nArgs int, functionName string) string {
 	return joinStrings(call)
 }
 
+func getLabel(label string) string {
+	return fmt.Sprintf("(%s)\n", label)
+}
+
+func (cw *CodeWriter) writeLabel(label string) {
+	cw.writeStringToOutput(getLabel(label))
+}
+
 func (cw *CodeWriter) writeCall(functionName string, numArgs int) {
 	returnAddress := getCallReturnAddress(functionName, cw.incrementNum())
 	cw.writeStringToOutput(getCall(returnAddress, numArgs, functionName))
