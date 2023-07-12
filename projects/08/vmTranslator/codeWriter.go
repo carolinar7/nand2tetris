@@ -27,9 +27,15 @@ import (
 const ASM_EXTENSION = ".asm"
 
 type CodeWriter struct {
-	outputFile   *os.File
-	incrementNum int
-	fileName     string
+	outputFile *os.File
+	num        int
+	fileName   string
+}
+
+func (cw *CodeWriter) incrementNum() int {
+	num := cw.num
+	cw.num++
+	return num
 }
 
 func (codeWriter *CodeWriter) writeStringToOutput(str string) {
@@ -67,11 +73,29 @@ func getCodeWriter(filePath string) *CodeWriter {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	return &CodeWriter{outputFile: outputfile, incrementNum: 0, fileName: fileName}
+	return &CodeWriter{outputFile: outputfile, num: 0, fileName: fileName}
+}
+
+func getInit(num int) string {
+	init := []string{}
+	// SP=256
+	init = append(init, "@256")
+	init = append(init, "D=A")
+	init = append(init, "@SP")
+	init = append(init, "M=D")
+	// Call Sys.init
+	functionName := "Sys.init"
+	returnAddress := getCallReturnAddress(functionName, num)
+	init = append(init, strings.TrimSuffix(getCall(returnAddress, 0, functionName), "\n"))
+	return joinStrings(init)
+}
+
+func (cw *CodeWriter) writeInit() {
+	cw.writeStringToOutput(getInit(cw.incrementNum()))
 }
 
 func (cw *CodeWriter) setFileName(filePath string) {
-	cw.incrementNum = 0
+	cw.num = 0
 	fileName, _ := getFileNameAndDirectory(filePath)
 	cw.fileName = fileName
 }
@@ -96,24 +120,23 @@ func incrementStackPointer(op []string) []string {
 	return op
 }
 
-func setComparison(cw *CodeWriter, op []string, comp string) []string {
+func setComparison(cwNum int, op []string, comp string) []string {
 	op = append(op, "D=M-D")
 	// Jump to label if conditional is true
-	op = append(op, fmt.Sprintf("@j%d", cw.incrementNum))
+	op = append(op, fmt.Sprintf("@j%d", cwNum))
 	op = append(op, fmt.Sprintf("D;%s", comp))
 	// false
 	op = append(op, "@SP")
 	op = append(op, "A=M")
 	op = append(op, "M=0")
-	op = append(op, fmt.Sprintf("@j%dend", cw.incrementNum))
+	op = append(op, fmt.Sprintf("@j%dend", cwNum))
 	op = append(op, "0;JMP")
 	// true
-	op = append(op, fmt.Sprintf("(j%d)", cw.incrementNum))
+	op = append(op, fmt.Sprintf("(j%d)", cwNum))
 	op = append(op, "@SP")
 	op = append(op, "A=M")
 	op = append(op, "M=-1")
-	op = append(op, fmt.Sprintf("(j%dend)", cw.incrementNum))
-	cw.incrementNum++
+	op = append(op, fmt.Sprintf("(j%dend)", cwNum))
 	return op
 }
 
@@ -150,35 +173,35 @@ func getNeg() string {
 	return joinStrings(neg)
 }
 
-func getEq(cw *CodeWriter) string {
+func getEq(cwNum int) string {
 	eq := []string{}
 	eq = decrementStackPointer(eq)
 	// D=*SP
 	eq = append(eq, "D=M")
 	eq = decrementStackPointer(eq)
-	eq = setComparison(cw, eq, "JEQ")
+	eq = setComparison(cwNum, eq, "JEQ")
 	eq = incrementStackPointer(eq)
 	return joinStrings(eq)
 }
 
-func getGt(cw *CodeWriter) string {
+func getGt(cwNum int) string {
 	gt := []string{}
 	gt = decrementStackPointer(gt)
 	// D=*SP
 	gt = append(gt, "D=M")
 	gt = decrementStackPointer(gt)
-	gt = setComparison(cw, gt, "JGT")
+	gt = setComparison(cwNum, gt, "JGT")
 	gt = incrementStackPointer(gt)
 	return joinStrings(gt)
 }
 
-func getLt(cw *CodeWriter) string {
+func getLt(cwNum int) string {
 	lt := []string{}
 	lt = decrementStackPointer(lt)
 	// D=*SP
 	lt = append(lt, "D=M")
 	lt = decrementStackPointer(lt)
-	lt = setComparison(cw, lt, "JLT")
+	lt = setComparison(cwNum, lt, "JLT")
 	lt = incrementStackPointer(lt)
 	return joinStrings(lt)
 }
@@ -225,11 +248,11 @@ func (cw *CodeWriter) writeArithmetic(command string) {
 	case "neg":
 		cw.writeStringToOutput(getNeg())
 	case "eq":
-		cw.writeStringToOutput(getEq(cw))
+		cw.writeStringToOutput(getEq(cw.incrementNum()))
 	case "gt":
-		cw.writeStringToOutput(getGt(cw))
+		cw.writeStringToOutput(getGt(cw.incrementNum()))
 	case "lt":
-		cw.writeStringToOutput(getLt(cw))
+		cw.writeStringToOutput(getLt(cw.incrementNum()))
 	case "and":
 		cw.writeStringToOutput(getAnd())
 	case "or":
@@ -457,6 +480,68 @@ func (cw *CodeWriter) writePushPop(pushPop int, segment string, idx int) {
 	case "pointer":
 		cw.writeStringToOutput(getPointerPushPop(pushPop, idx))
 	}
+}
+
+func getCallReturnAddress(functionName string, num int) string {
+	return fmt.Sprintf("%s$ret.%d", functionName, num)
+}
+
+func pushSegmentPointerAddress(push []string, abbr string) []string {
+	push = append(push, fmt.Sprintf("@%s", abbr))
+	push = append(push, "D=M")
+	push = append(push, "@SP")
+	push = append(push, "A=M")
+	push = append(push, "M=D")
+	push = incrementStackPointer(push)
+	return push
+}
+
+func getCall(returnAddress string, nArgs int, functionName string) string {
+	// push returnAddress
+	call := []string{}
+	call = append(call, fmt.Sprintf("@%s", returnAddress))
+	call = append(call, "D=A")
+	call = append(call, "@SP")
+	call = append(call, "A=M")
+	call = append(call, "M=D")
+	call = incrementStackPointer(call)
+	// push LCL
+	call = pushSegmentPointerAddress(call, LOCAL_ABBR)
+	// push ARG
+	call = pushSegmentPointerAddress(call, ARGUMENT_ABBR)
+	// push THIS
+	call = pushSegmentPointerAddress(call, THIS_ABBR)
+	// push THAT
+	call = pushSegmentPointerAddress(call, THAT_ABBR)
+	// ARG = SP - 5 - nArgs
+	call = append(call, "@SP")
+	call = append(call, "AD=M")
+	call = append(call, "M=D")
+	call = incrementStackPointer(call)
+	call = append(call, strings.TrimSuffix(getConstantPush(5), "\n"))
+	call = append(call, strings.TrimSuffix(getConstantPush(nArgs), "\n"))
+	call = append(call, strings.TrimSuffix(getSub(), "\n"))
+	call = append(call, strings.TrimSuffix(getSub(), "\n"))
+	call = decrementStackPointer(call)
+	call = append(call, "D=M")
+	call = append(call, "@ARG")
+	call = append(call, "M=D")
+	// LCL = SP
+	call = append(call, "@SP")
+	call = append(call, "D=M")
+	call = append(call, "@LCL")
+	call = append(call, "M=D")
+	// goto functionName
+	call = append(call, fmt.Sprintf("@%s", functionName))
+	call = append(call, "0;JMP")
+	// (returnAddress)
+	call = append(call, fmt.Sprintf("(%s)", returnAddress))
+	return joinStrings(call)
+}
+
+func (cw *CodeWriter) writeCall(functionName string, numArgs int) {
+	returnAddress := getCallReturnAddress(functionName, cw.incrementNum())
+	cw.writeStringToOutput(getCall(returnAddress, numArgs, functionName))
 }
 
 func closeLoop() string {
