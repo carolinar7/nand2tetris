@@ -25,6 +25,8 @@ import (
 )
 
 const ASM_EXTENSION = ".asm"
+const TRUE = -1
+const FALSE = 0
 
 type CodeWriter struct {
 	outputFile *os.File
@@ -128,14 +130,14 @@ func setComparison(cwNum int, op []string, comp string) []string {
 	// false
 	op = append(op, "@SP")
 	op = append(op, "A=M")
-	op = append(op, "M=0")
+	op = append(op, fmt.Sprintf("M=%d", FALSE))
 	op = append(op, fmt.Sprintf("@j%dend", cwNum))
 	op = append(op, "0;JMP")
 	// true
 	op = append(op, fmt.Sprintf("(j%d)", cwNum))
 	op = append(op, "@SP")
 	op = append(op, "A=M")
-	op = append(op, "M=-1")
+	op = append(op, fmt.Sprintf("M=%d", TRUE))
 	op = append(op, fmt.Sprintf("(j%dend)", cwNum))
 	return op
 }
@@ -496,6 +498,45 @@ func pushSegmentPointerAddress(push []string, abbr string) []string {
 	return push
 }
 
+func getLabel(label string) string {
+	return fmt.Sprintf("(%s)\n", label)
+}
+
+func (cw *CodeWriter) writeLabel(label string) {
+	cw.writeStringToOutput(getLabel(label))
+}
+
+func getGoto(label string) string {
+	gt := []string{}
+	gt = append(gt, fmt.Sprintf("@%s", label))
+	gt = append(gt, fmt.Sprintf("0;JMP"))
+	return joinStrings(gt)
+}
+
+func (cw *CodeWriter) writeGoto(label string) {
+	cw.writeStringToOutput(getLabel(label))
+}
+
+func getIfGoto(label string, num int) string {
+	ifgt := []string{}
+	// D=*(SP-1)
+	ifgt = decrementStackPointer(ifgt)
+	ifgt = append(ifgt, "D=M")
+	// if D == false jump to end
+	ifLabel := fmt.Sprintf("ifgoto.%d", num)
+	ifgt = append(ifgt, fmt.Sprintf("@%s", ifLabel))
+	ifgt = append(ifgt, "D; JMP")
+	// if D == true jump to label
+	ifgt = append(ifgt, fmt.Sprintf("@%s", label))
+	ifgt = append(ifgt, "0; JMP")
+	ifgt = append(ifgt, fmt.Sprintf("(%s)", ifLabel))
+	return joinStrings(ifgt)
+}
+
+func (cw *CodeWriter) writeIf(label string) {
+	cw.writeStringToOutput(getIfGoto(label, cw.incrementNum()))
+}
+
 func getCall(returnAddress string, nArgs int, functionName string) string {
 	// push returnAddress
 	call := []string{}
@@ -537,25 +578,6 @@ func getCall(returnAddress string, nArgs int, functionName string) string {
 	// (returnAddress)
 	call = append(call, fmt.Sprintf("(%s)", returnAddress))
 	return joinStrings(call)
-}
-
-func getLabel(label string) string {
-	return fmt.Sprintf("(%s)\n", label)
-}
-
-func (cw *CodeWriter) writeLabel(label string) {
-	cw.writeStringToOutput(getLabel(label))
-}
-
-func getGoto(label string) string {
-	gt := []string{}
-	gt = append(gt, fmt.Sprintf("@%s", label))
-	gt = append(gt, fmt.Sprintf("0;JMP"))
-	return joinStrings(gt)
-}
-
-func (cw *CodeWriter) writeGoto(label string) {
-	cw.writeStringToOutput(getLabel(label))
 }
 
 func (cw *CodeWriter) writeCall(functionName string, numArgs int) {
