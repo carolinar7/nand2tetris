@@ -64,6 +64,7 @@ func runFiles(filePath string) {
 	files := getFiles(filePath)
 	codeWriter := getCodeWriter(filePath)
 	for _, file := range files {
+		codeWriter.setFileName(file.Name())
 		runFile(file, codeWriter)
 	}
 	codeWriter.Close()

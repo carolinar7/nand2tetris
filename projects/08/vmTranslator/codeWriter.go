@@ -70,6 +70,12 @@ func getCodeWriter(filePath string) *CodeWriter {
 	return &CodeWriter{outputFile: outputfile, incrementNum: 0, fileName: fileName}
 }
 
+func (cw *CodeWriter) setFileName(filePath string) {
+	cw.incrementNum = 0
+	fileName, _ := getFileNameAndDirectory(filePath)
+	cw.fileName = fileName
+}
+
 func joinStrings(strs []string) string {
 	str := strings.Join(strs, "\n")
 	return fmt.Sprintf("%s\n", str)
