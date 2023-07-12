@@ -96,7 +96,7 @@ func incrementStackPointer(op []string) []string {
 	return op
 }
 
-func (cw *CodeWriter) setComparison(op []string, comp string) []string {
+func setComparison(cw *CodeWriter, op []string, comp string) []string {
 	op = append(op, "D=M-D")
 	// Jump to label if conditional is true
 	op = append(op, fmt.Sprintf("@j%d", cw.incrementNum))
@@ -117,7 +117,7 @@ func (cw *CodeWriter) setComparison(op []string, comp string) []string {
 	return op
 }
 
-func (cw *CodeWriter) getAdd() string {
+func getAdd() string {
 	add := []string{}
 	add = decrementStackPointer(add[:])
 	// D=*SP
@@ -129,7 +129,7 @@ func (cw *CodeWriter) getAdd() string {
 	return joinStrings(add)
 }
 
-func (cw *CodeWriter) getSub() string {
+func getSub() string {
 	sub := []string{}
 	sub = decrementStackPointer(sub)
 	// D=*SP
@@ -141,7 +141,7 @@ func (cw *CodeWriter) getSub() string {
 	return joinStrings(sub)
 }
 
-func (cw *CodeWriter) getNeg() string {
+func getNeg() string {
 	neg := []string{}
 	neg = decrementStackPointer(neg)
 	// -*SP
@@ -150,40 +150,40 @@ func (cw *CodeWriter) getNeg() string {
 	return joinStrings(neg)
 }
 
-func (cw *CodeWriter) getEq() string {
+func getEq(cw *CodeWriter) string {
 	eq := []string{}
 	eq = decrementStackPointer(eq)
 	// D=*SP
 	eq = append(eq, "D=M")
 	eq = decrementStackPointer(eq)
-	eq = cw.setComparison(eq, "JEQ")
+	eq = setComparison(cw, eq, "JEQ")
 	eq = incrementStackPointer(eq)
 	return joinStrings(eq)
 }
 
-func (cw *CodeWriter) getGt() string {
+func getGt(cw *CodeWriter) string {
 	gt := []string{}
 	gt = decrementStackPointer(gt)
 	// D=*SP
 	gt = append(gt, "D=M")
 	gt = decrementStackPointer(gt)
-	gt = cw.setComparison(gt, "JGT")
+	gt = setComparison(cw, gt, "JGT")
 	gt = incrementStackPointer(gt)
 	return joinStrings(gt)
 }
 
-func (cw *CodeWriter) getLt() string {
+func getLt(cw *CodeWriter) string {
 	lt := []string{}
 	lt = decrementStackPointer(lt)
 	// D=*SP
 	lt = append(lt, "D=M")
 	lt = decrementStackPointer(lt)
-	lt = cw.setComparison(lt, "JLT")
+	lt = setComparison(cw, lt, "JLT")
 	lt = incrementStackPointer(lt)
 	return joinStrings(lt)
 }
 
-func (cw *CodeWriter) getAnd() string {
+func getAnd() string {
 	and := []string{}
 	and = decrementStackPointer(and)
 	// D=*SP
@@ -195,7 +195,7 @@ func (cw *CodeWriter) getAnd() string {
 	return joinStrings(and)
 }
 
-func (cw *CodeWriter) getOr() string {
+func getOr() string {
 	or := []string{}
 	or = decrementStackPointer(or)
 	// D=*SP
@@ -207,7 +207,7 @@ func (cw *CodeWriter) getOr() string {
 	return joinStrings(or)
 }
 
-func (cw *CodeWriter) getNot() string {
+func getNot() string {
 	not := []string{}
 	not = decrementStackPointer(not)
 	// M=!M
@@ -219,23 +219,23 @@ func (cw *CodeWriter) getNot() string {
 func (cw *CodeWriter) writeArithmetic(command string) {
 	switch command {
 	case "add":
-		cw.writeStringToOutput(cw.getAdd())
+		cw.writeStringToOutput(getAdd())
 	case "sub":
-		cw.writeStringToOutput(cw.getSub())
+		cw.writeStringToOutput(getSub())
 	case "neg":
-		cw.writeStringToOutput(cw.getNeg())
+		cw.writeStringToOutput(getNeg())
 	case "eq":
-		cw.writeStringToOutput(cw.getEq())
+		cw.writeStringToOutput(getEq(cw))
 	case "gt":
-		cw.writeStringToOutput(cw.getGt())
+		cw.writeStringToOutput(getGt(cw))
 	case "lt":
-		cw.writeStringToOutput(cw.getLt())
+		cw.writeStringToOutput(getLt(cw))
 	case "and":
-		cw.writeStringToOutput(cw.getAnd())
+		cw.writeStringToOutput(getAnd())
 	case "or":
-		cw.writeStringToOutput(cw.getOr())
+		cw.writeStringToOutput(getOr())
 	case "not":
-		cw.writeStringToOutput(cw.getNot())
+		cw.writeStringToOutput(getNot())
 	}
 }
 
@@ -282,35 +282,35 @@ func segmentPointerPop(segment string, idx int) string {
 	return joinStrings(pop)
 }
 
-func (cw *CodeWriter) getLocalPushPop(pushPop int, idx int) string {
+func getLocalPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(LOCAL_ABBR, idx)
 	}
 	return segmentPointerPop(LOCAL_ABBR, idx)
 }
 
-func (cw *CodeWriter) getArgumentPushPop(pushPop int, idx int) string {
+func getArgumentPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(ARGUMENT_ABBR, idx)
 	}
 	return segmentPointerPop(ARGUMENT_ABBR, idx)
 }
 
-func (cw *CodeWriter) getThisPushPop(pushPop int, idx int) string {
+func getThisPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(THIS_ABBR, idx)
 	}
 	return segmentPointerPop(THIS_ABBR, idx)
 }
 
-func (cw *CodeWriter) getThatPushPop(pushPop int, idx int) string {
+func getThatPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return segmentPointersPush(THAT_ABBR, idx)
 	}
 	return segmentPointerPop(THAT_ABBR, idx)
 }
 
-func (cw *CodeWriter) getConstantPush(idx int) string {
+func getConstantPush(idx int) string {
 	constant := []string{}
 	// D=i
 	constant = append(constant, fmt.Sprintf("@%d", idx))
@@ -347,7 +347,7 @@ func popStatic(idx int, fileName string) string {
 	return joinStrings(pop)
 }
 
-func (cw *CodeWriter) getStaticPushPop(pushPop int, idx int) string {
+func getStaticPushPop(cw *CodeWriter, pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return pushStatic(idx, cw.fileName)
 	}
@@ -391,7 +391,7 @@ func popTemp(idx int) string {
 	return joinStrings(pop)
 }
 
-func (cw *CodeWriter) getTempPushPop(pushPop int, idx int) string {
+func getTempPushPop(pushPop int, idx int) string {
 	if pushPop == C_PUSH {
 		return pushTemp(idx)
 	}
@@ -425,7 +425,7 @@ func popPointer(idx int, pt string) string {
 	return joinStrings(pop)
 }
 
-func (cw *CodeWriter) getPointerPushPop(pushPop int, idx int) string {
+func getPointerPushPop(pushPop int, idx int) string {
 	var pointerType string
 	if idx == THIS {
 		pointerType = "THIS"
@@ -441,25 +441,25 @@ func (cw *CodeWriter) getPointerPushPop(pushPop int, idx int) string {
 func (cw *CodeWriter) writePushPop(pushPop int, segment string, idx int) {
 	switch segment {
 	case "local":
-		cw.writeStringToOutput(cw.getLocalPushPop(pushPop, idx))
+		cw.writeStringToOutput(getLocalPushPop(pushPop, idx))
 	case "argument":
-		cw.writeStringToOutput(cw.getArgumentPushPop(pushPop, idx))
+		cw.writeStringToOutput(getArgumentPushPop(pushPop, idx))
 	case "this":
-		cw.writeStringToOutput(cw.getThisPushPop(pushPop, idx))
+		cw.writeStringToOutput(getThisPushPop(pushPop, idx))
 	case "that":
-		cw.writeStringToOutput(cw.getThatPushPop(pushPop, idx))
+		cw.writeStringToOutput(getThatPushPop(pushPop, idx))
 	case "constant":
-		cw.writeStringToOutput(cw.getConstantPush(idx))
+		cw.writeStringToOutput(getConstantPush(idx))
 	case "static":
-		cw.writeStringToOutput(cw.getStaticPushPop(pushPop, idx))
+		cw.writeStringToOutput(getStaticPushPop(cw, pushPop, idx))
 	case "temp":
-		cw.writeStringToOutput(cw.getTempPushPop(pushPop, idx))
+		cw.writeStringToOutput(getTempPushPop(pushPop, idx))
 	case "pointer":
-		cw.writeStringToOutput(cw.getPointerPushPop(pushPop, idx))
+		cw.writeStringToOutput(getPointerPushPop(pushPop, idx))
 	}
 }
 
-func (cw *CodeWriter) closeLoop() string {
+func closeLoop() string {
 	close := []string{}
 	close = append(close, "(END_EXECUTION)")
 	close = append(close, "@END_EXECUTION")
@@ -468,6 +468,6 @@ func (cw *CodeWriter) closeLoop() string {
 }
 
 func (cw *CodeWriter) Close() {
-	cw.writeStringToOutput(cw.closeLoop())
+	cw.writeStringToOutput(closeLoop())
 	cw.outputFile.Close()
 }
