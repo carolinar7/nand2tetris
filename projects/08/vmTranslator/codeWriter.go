@@ -452,3 +452,16 @@ func (cw *CodeWriter) writePushPop(pushPop int, segment string, idx int) {
 		cw.writeStringToOutput(cw.getPointerPushPop(pushPop, idx))
 	}
 }
+
+func (cw *CodeWriter) closeLoop() string {
+	close := []string{}
+	close = append(close, "(END_EXECUTION)")
+	close = append(close, "@END_EXECUTION")
+	close = append(close, "0;JMP")
+	return joinStrings(close)
+}
+
+func (cw *CodeWriter) Close() {
+	cw.writeStringToOutput(cw.closeLoop())
+	cw.outputFile.Close()
+}
