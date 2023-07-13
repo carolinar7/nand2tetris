@@ -616,7 +616,7 @@ func getFromEndFrame(instr []string, pointer string, offset int) []string {
 	instr = append(instr, strings.TrimSuffix(getSub(), "\n"))
 	instr = decrementStackPointer(instr)
 	instr = append(instr, "D=M")
-	instr = append(instr, "@D")
+	instr = append(instr, "A=D")
 	instr = append(instr, "D=M")
 	instr = append(instr, fmt.Sprintf("@%s", pointer))
 	instr = append(instr, "M=D")
@@ -653,6 +653,7 @@ func getReturn() string {
 	rtrn = getFromEndFrame(rtrn, "LCL", 4)
 	// goto retAddr
 	rtrn = append(rtrn, "@R14")
+	rtrn = append(rtrn, "A=M")
 	rtrn = append(rtrn, "0;JMP")
 	return joinStrings(rtrn)
 }
