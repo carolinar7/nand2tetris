@@ -514,7 +514,7 @@ func getGoto(label string) string {
 }
 
 func (cw *CodeWriter) writeGoto(label string) {
-	cw.writeStringToOutput(getLabel(label))
+	cw.writeStringToOutput(getGoto(label))
 }
 
 func getIfGoto(label string, num int) string {
