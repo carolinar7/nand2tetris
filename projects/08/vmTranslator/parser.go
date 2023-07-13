@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -23,6 +24,8 @@ const (
 	C_FUNCTION
 	C_RETURN
 )
+
+const CommentRegexToRemove = "//*"
 
 type VMProgram []string
 type Command []string
@@ -67,11 +70,16 @@ func isComment(line string) bool {
 	return len(line) > 1 && line[0] == '/' && line[1] == '/'
 }
 
+func removeInlineComments(line string) string {
+	re := regexp.MustCompile(CommentRegexToRemove)
+	return re.Split(line, -1)[0]
+}
+
 func removeLineComments(vmLines []string) []string {
 	newLines := []string{}
 	for _, line := range vmLines {
 		if !isComment(line) {
-			newLines = append(newLines, line)
+			newLines = append(newLines, removeInlineComments(line))
 		}
 	}
 	vmLines = newLines
