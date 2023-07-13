@@ -585,6 +585,26 @@ func (cw *CodeWriter) writeCall(functionName string, numArgs int) {
 	cw.writeStringToOutput(getCall(returnAddress, numArgs, functionName))
 }
 
+func getFunction(functionName string, nVars int) string {
+	function := []string{}
+	// (functionName)
+	function = append(function, fmt.Sprintf("(%s)", functionName))
+	for i := 0; i < nVars; i++ {
+		// push 0
+		function = append(function, "@0")
+		function = append(function, "D=A")
+		function = append(function, "@SP")
+		function = append(function, "A=M")
+		function = append(function, "M=D")
+		function = incrementStackPointer(function)
+	}
+	return joinStrings(function)
+}
+
+func (cw *CodeWriter) writeFunction(functionName string, nVars int) {
+	cw.writeStringToOutput(getFunction(functionName, nVars))
+}
+
 func closeLoop() string {
 	close := []string{}
 	close = append(close, "(END_EXECUTION)")

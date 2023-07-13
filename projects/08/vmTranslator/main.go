@@ -62,6 +62,8 @@ func runFile(file *os.File, cw *CodeWriter) {
 			cw.writeGoto(parser.arg1())
 		} else if parser.commandType() == C_IFGOTO {
 			cw.writeIf(parser.arg1())
+		} else if parser.commandType() == C_FUNCTION {
+			cw.writeFunction(parser.arg1(), parser.arg2())
 		}
 	}
 }
