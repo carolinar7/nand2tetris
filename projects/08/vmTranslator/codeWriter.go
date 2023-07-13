@@ -605,6 +605,62 @@ func (cw *CodeWriter) writeFunction(functionName string, nVars int) {
 	cw.writeStringToOutput(getFunction(functionName, nVars))
 }
 
+func getFromEndFrame(instr []string, pointer string, offset int) []string {
+	instr = append(instr, "@R13")
+	instr = append(instr, "D=M")
+	instr = append(instr, "@SP")
+	instr = append(instr, "A=M")
+	instr = append(instr, "M=D")
+	instr = incrementStackPointer(instr)
+	instr = append(instr, strings.TrimSuffix(getConstantPush(offset), "\n"))
+	instr = append(instr, strings.TrimSuffix(getSub(), "\n"))
+	instr = decrementStackPointer(instr)
+	instr = append(instr, "D=M")
+	instr = append(instr, "@D")
+	instr = append(instr, "D=M")
+	instr = append(instr, fmt.Sprintf("@%s", pointer))
+	instr = append(instr, "M=D")
+	return instr
+}
+
+func getReturn() string {
+	rtrn := []string{}
+	// endFrame = LCL
+	rtrn = append(rtrn, "@LCL")
+	rtrn = append(rtrn, "D=M")
+	rtrn = append(rtrn, "@R13")
+	rtrn = append(rtrn, "M=D")
+	// retAddr = *(endFrame - 5)
+	rtrn = getFromEndFrame(rtrn, "R14", 5)
+	// *ARG = POP()
+	rtrn = decrementStackPointer(rtrn)
+	rtrn = append(rtrn, "D=M")
+	rtrn = append(rtrn, "@ARG")
+	rtrn = append(rtrn, "A=M")
+	rtrn = append(rtrn, "M=D")
+	// SP = ARG + 1
+	rtrn = append(rtrn, "@ARG")
+	rtrn = append(rtrn, "D=M")
+	rtrn = append(rtrn, "@SP")
+	rtrn = append(rtrn, "M=D+1")
+	// THAT = *(endFrame - 1)
+	rtrn = getFromEndFrame(rtrn, "THAT", 1)
+	// THIS = *(endFrame - 2)
+	rtrn = getFromEndFrame(rtrn, "THIS", 2)
+	// ARG = *(endFrame - 3)
+	rtrn = getFromEndFrame(rtrn, "ARG", 3)
+	// LCL = *(endFrame - 4)
+	rtrn = getFromEndFrame(rtrn, "LCL", 4)
+	// goto retAddr
+	rtrn = append(rtrn, "@R14")
+	rtrn = append(rtrn, "0;JMP")
+	return joinStrings(rtrn)
+}
+
+func (cw *CodeWriter) writeReturn() {
+	cw.writeStringToOutput(getReturn())
+}
+
 func closeLoop() string {
 	close := []string{}
 	close = append(close, "(END_EXECUTION)")

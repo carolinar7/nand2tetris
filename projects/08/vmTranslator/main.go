@@ -64,6 +64,10 @@ func runFile(file *os.File, cw *CodeWriter) {
 			cw.writeIf(parser.arg1())
 		} else if parser.commandType() == C_FUNCTION {
 			cw.writeFunction(parser.arg1(), parser.arg2())
+		} else if parser.commandType() == C_RETURN {
+			cw.writeReturn()
+		} else {
+			log.Fatal("Invalid command found in vm file.")
 		}
 	}
 }
