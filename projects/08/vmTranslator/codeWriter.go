@@ -525,7 +525,7 @@ func getIfGoto(label string, num int) string {
 	// if D == false jump to end
 	ifLabel := fmt.Sprintf("ifgoto.%d", num)
 	ifgt = append(ifgt, fmt.Sprintf("@%s", ifLabel))
-	ifgt = append(ifgt, "D; JMP")
+	ifgt = append(ifgt, "D; JEQ")
 	// if D == true jump to label
 	ifgt = append(ifgt, fmt.Sprintf("@%s", label))
 	ifgt = append(ifgt, "0; JMP")
