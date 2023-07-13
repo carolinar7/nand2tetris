@@ -66,6 +66,13 @@ func seperateEachLine(file *os.File) []string {
 	return vmLines
 }
 
+func removeTabs(vmLines []string) []string {
+	for i := 0; i < len(vmLines); i++ {
+		vmLines[i] = strings.Replace(vmLines[i], "\t", " ", 100)
+	}
+	return vmLines
+}
+
 func isComment(line string) bool {
 	return len(line) > 1 && line[0] == '/' && line[1] == '/'
 }
@@ -102,6 +109,7 @@ func removeEmptyLines(vmLines []string) []string {
 }
 
 func formatVMLines(vmLines []string) VMProgram {
+	vmLines = removeTabs(vmLines)
 	vmLines = removeLineComments(vmLines)
 	return removeEmptyLines(vmLines)
 }
