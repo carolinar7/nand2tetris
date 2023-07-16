@@ -64,6 +64,8 @@ func runFile(file *os.File, cw *CodeWriter) {
 			cw.writeIf(parser.arg1())
 		} else if parser.commandType() == C_FUNCTION {
 			cw.writeFunction(parser.arg1(), parser.arg2())
+		} else if parser.commandType() == C_CALL {
+			cw.writeCall(parser.arg1(), parser.arg2())
 		} else if parser.commandType() == C_RETURN {
 			cw.writeReturn()
 		} else {
@@ -75,6 +77,7 @@ func runFile(file *os.File, cw *CodeWriter) {
 func runFiles(filePath string) {
 	files := getFiles(filePath)
 	codeWriter := getCodeWriter(filePath)
+	codeWriter.writeInit()
 	for _, file := range files {
 		codeWriter.setFileName(file.Name())
 		runFile(file, codeWriter)

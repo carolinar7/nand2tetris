@@ -29,9 +29,10 @@ const TRUE = -1
 const FALSE = 0
 
 type CodeWriter struct {
-	outputFile *os.File
-	num        int
-	fileName   string
+	outputFile   *os.File
+	num          int
+	fileName     string
+	functionName string
 }
 
 func (cw *CodeWriter) incrementNum() int {
@@ -45,6 +46,7 @@ func (codeWriter *CodeWriter) writeStringToOutput(str string) {
 }
 
 func getFileNameAndDirectory(filePath string) (string, string) {
+	filePath = strings.ReplaceAll(filePath, "\\", "/")
 	// Break down path
 	filePathAsSlice := strings.Split(filePath, "/")
 	fileStr := filePathAsSlice[len(filePathAsSlice)-1]
@@ -94,6 +96,7 @@ func getInit(num int) string {
 
 func (cw *CodeWriter) writeInit() {
 	cw.writeStringToOutput(getInit(cw.incrementNum()))
+	cw.functionName = "Sys.init"
 }
 
 func (cw *CodeWriter) setFileName(filePath string) {
@@ -498,43 +501,43 @@ func pushSegmentPointerAddress(push []string, abbr string) []string {
 	return push
 }
 
-func getLabel(label string) string {
-	return fmt.Sprintf("(%s)\n", label)
+func getLabel(functionName, label string) string {
+	return fmt.Sprintf("(%s$%s)\n", functionName, label)
 }
 
 func (cw *CodeWriter) writeLabel(label string) {
-	cw.writeStringToOutput(getLabel(label))
+	cw.writeStringToOutput(getLabel(cw.functionName, label))
 }
 
-func getGoto(label string) string {
+func getGoto(functionName, label string) string {
 	gt := []string{}
-	gt = append(gt, fmt.Sprintf("@%s", label))
+	gt = append(gt, fmt.Sprintf("@%s$%s", functionName, label))
 	gt = append(gt, fmt.Sprintf("0;JMP"))
 	return joinStrings(gt)
 }
 
 func (cw *CodeWriter) writeGoto(label string) {
-	cw.writeStringToOutput(getGoto(label))
+	cw.writeStringToOutput(getGoto(cw.functionName, label))
 }
 
-func getIfGoto(label string, num int) string {
+func getIfGoto(functionName, label string, num int) string {
 	ifgt := []string{}
 	// D=*(SP-1)
 	ifgt = decrementStackPointer(ifgt)
 	ifgt = append(ifgt, "D=M")
 	// if D == false jump to end
-	ifLabel := fmt.Sprintf("ifgoto.%d", num)
+	ifLabel := fmt.Sprintf("%s$ifgoto.%d", functionName, num)
 	ifgt = append(ifgt, fmt.Sprintf("@%s", ifLabel))
 	ifgt = append(ifgt, "D; JEQ")
 	// if D == true jump to label
-	ifgt = append(ifgt, fmt.Sprintf("@%s", label))
+	ifgt = append(ifgt, fmt.Sprintf("@%s$%s", functionName, label))
 	ifgt = append(ifgt, "0; JMP")
 	ifgt = append(ifgt, fmt.Sprintf("(%s)", ifLabel))
 	return joinStrings(ifgt)
 }
 
 func (cw *CodeWriter) writeIf(label string) {
-	cw.writeStringToOutput(getIfGoto(label, cw.incrementNum()))
+	cw.writeStringToOutput(getIfGoto(cw.functionName, label, cw.incrementNum()))
 }
 
 func getCall(returnAddress string, nArgs int, functionName string) string {
@@ -556,15 +559,11 @@ func getCall(returnAddress string, nArgs int, functionName string) string {
 	call = pushSegmentPointerAddress(call, THAT_ABBR)
 	// ARG = SP - 5 - nArgs
 	call = append(call, "@SP")
-	call = append(call, "AD=M")
-	call = append(call, "M=D")
-	call = incrementStackPointer(call)
-	call = append(call, strings.TrimSuffix(getConstantPush(5), "\n"))
-	call = append(call, strings.TrimSuffix(getConstantPush(nArgs), "\n"))
-	call = append(call, strings.TrimSuffix(getSub(), "\n"))
-	call = append(call, strings.TrimSuffix(getSub(), "\n"))
-	call = decrementStackPointer(call)
 	call = append(call, "D=M")
+	call = append(call, "@5")
+	call = append(call, "D=D-A")
+	call = append(call, fmt.Sprintf("@%d", nArgs))
+	call = append(call, "D=D-A")
 	call = append(call, "@ARG")
 	call = append(call, "M=D")
 	// LCL = SP
@@ -603,19 +602,14 @@ func getFunction(functionName string, nVars int) string {
 
 func (cw *CodeWriter) writeFunction(functionName string, nVars int) {
 	cw.writeStringToOutput(getFunction(functionName, nVars))
+	cw.functionName = functionName
 }
 
 func getFromEndFrame(instr []string, pointer string, offset int) []string {
 	instr = append(instr, "@R13")
 	instr = append(instr, "D=M")
-	instr = append(instr, "@SP")
-	instr = append(instr, "A=M")
-	instr = append(instr, "M=D")
-	instr = incrementStackPointer(instr)
-	instr = append(instr, strings.TrimSuffix(getConstantPush(offset), "\n"))
-	instr = append(instr, strings.TrimSuffix(getSub(), "\n"))
-	instr = decrementStackPointer(instr)
-	instr = append(instr, "D=M")
+	instr = append(instr, fmt.Sprintf("@%d", offset))
+	instr = append(instr, "D=D-A")
 	instr = append(instr, "A=D")
 	instr = append(instr, "D=M")
 	instr = append(instr, fmt.Sprintf("@%s", pointer))
