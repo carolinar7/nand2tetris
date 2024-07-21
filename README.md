@@ -14,7 +14,7 @@ By the end, I would have completed 12 projects:
 - [x] [Assembler](https://www.nand2tetris.org/project06)
 ## Software
 - [x] [VM I: Stack Arithmetic](https://www.nand2tetris.org/project07)
-- [ ] [VM II: Program Control](https://www.nand2tetris.org/project08)
+- [x] [VM II: Program Control](https://www.nand2tetris.org/project08)
 - [ ] [High-Level Language](https://www.nand2tetris.org/project09)
 - [ ] [Compiler I: Syntax Analysis](https://www.nand2tetris.org/project10)
 - [ ] [Compiler II: Code Generation](https://www.nand2tetris.org/project11)
