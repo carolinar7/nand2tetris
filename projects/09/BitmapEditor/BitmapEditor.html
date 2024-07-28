@@ -185,7 +185,7 @@
                     </table>
                 </form>
             </td>
-            <td><textarea id="generatedCode" cols="50" rows="20" readonly="read-only"></textarea></td>                                
+            <td><textarea id="generatedCode" cols="50" rows="20"></textarea></td>                                
         </tr>
         <tr>
             <table>
@@ -198,3 +198,57 @@
     </table>
 </body>
 </html>
+
+<!-- 
+// Function used for going from Generated Jack Code to filled out bitmap
+function paintGrid(generatedJackCode) {
+    const codeInBlockMatch = generatedJackCode.match(/(?<=\{)([\s\S]*?)(?=\})/);
+    const codeInBlockStr = codeInBlockMatch[1];
+    const codeLines = codeInBlockStr.split("\n");
+    const pokeLines = codeLines.slice(2).slice(0, -2);
+    pokeLines.forEach((line, index) => {
+        const numericRowValueMatch = line.match(/,\s(-?\d+)/)
+        let numericRowValue = Number(numericRowValueMatch[1])
+        numericRowValue = (numericRowValue < 0) ? ((Math.abs(numericRowValue) - 1) ^ 65535) : numericRowValue
+        const binaryValue = numericRowValue.toString(2).padStart(16, '0');
+        let counter = 15;
+        for (let i = binaryValue.length - 1; i >= binaryValue.length - 16; i--) {
+            const bitId = (16 * index) + counter;
+            const bitElement = document.getElementById(bitId);
+            const expectedBackgroundColorForClick = {'1': 'white', '0': 'black'};
+            const bit = binaryValue.charAt(i);
+            let currentColor = bitElement.style.backgroundColor;
+            if (!currentColor || currentColor === '') {
+                currentColor = 'white'
+            }
+            if (expectedBackgroundColorForClick[bit] === currentColor) {
+                bitElement.click()
+            }
+            counter--;
+        }
+    })
+}
+
+// Example usage:
+paintGrid(`
+function void draw(int location) {
+	let memAddress = 16384+location;
+	do Memory.poke(memAddress+0, -22123);
+	do Memory.poke(memAddress+32, 29646);
+	do Memory.poke(memAddress+64, 13740);
+	do Memory.poke(memAddress+96, 16380);
+	do Memory.poke(memAddress+128, 2016);
+	do Memory.poke(memAddress+160, 2016);
+	do Memory.poke(memAddress+192, 2016);
+	do Memory.poke(memAddress+224, 2016);
+	do Memory.poke(memAddress+256, 2016);
+	do Memory.poke(memAddress+288, 4080);
+	do Memory.poke(memAddress+320, 8184);
+	do Memory.poke(memAddress+352, 16380);
+	do Memory.poke(memAddress+384, 28686);
+	do Memory.poke(memAddress+416, 14364);
+	do Memory.poke(memAddress+448, 7224);
+	do Memory.poke(memAddress+480, 10836);
+	return;
+}
+`) -->
