@@ -1,0 +1,10 @@
+// Entrance point to the FrogGame
+class Main {
+  function void main() {
+    var FrogGame frogGame;
+    let frogGame = FrogGame.new();
+    do frogGame.run();
+    do frogGame.dispose();
+    return;
+  }
+}
