@@ -1,10 +1,40 @@
-// Class representing the FrogSprite art
-class FrogSprite {
-  field int memAddress;
+// Class representing the Frog art
+class Frog {
+  field int currentLocation;
+  field int direction;
+
+  constructor Frog new(int currLoc) {
+    let currentLocation = currLoc;
+    let direction = 1;
+    do faceForward();
+    return this;
+  }
+
+  method void faceForward() {
+    do clearPaint();
+    do drawForwardFacingFrog();
+    let direction = 1;
+    return;
+  }
+  
+  method void faceRight() {
+    do clearPaint();
+    do drawRightFacingFrog();
+    let direction = 2;
+    return;
+  }
+
+  method void faceLeft() {
+    do clearPaint();
+    do drawLeftFacingFrog();
+    let direction = 3;
+    return;
+  }
 
   // Forward facing frog
-  function void drawForwardFacingFrog(int location) {
-    let memAddress = 16384+location;
+  method void drawForwardFacingFrog() {
+    var int memAddress;
+    let memAddress = 16384+currentLocation;
     do Memory.poke(memAddress+0, -22123);
     do Memory.poke(memAddress+32, 29646);
     do Memory.poke(memAddress+64, 13740);
@@ -25,9 +55,10 @@ class FrogSprite {
   }
 
   // Right facing frog
-  function void drawRightFacingFrog(int location) {
-    let memAddress = 16384+location;
-    do Memory.poke(memAddress+0, -32768);
+  method void drawRightFacingFrog() {
+    var int memAddress;
+    let memAddress = 16384+currentLocation;
+    do Memory.poke(memAddress+0, ~32767);
     do Memory.poke(memAddress+32, 16392);
     do Memory.poke(memAddress+64, -4067);
     do Memory.poke(memAddress+96, 28734);
@@ -42,35 +73,14 @@ class FrogSprite {
     do Memory.poke(memAddress+384, 28734);
     do Memory.poke(memAddress+416, -4067);
     do Memory.poke(memAddress+448, 16392);
-    do Memory.poke(memAddress+480, -32768);
-    return;
-  }
-
-  // Downward facing frog
-  function void drawDownwardFacingFrog(int location) {
-    let memAddress = 16384+location;
-    do Memory.poke(memAddress+0, 10836);
-    do Memory.poke(memAddress+32, 7224);
-    do Memory.poke(memAddress+64, 14364);
-    do Memory.poke(memAddress+96, 28686);
-    do Memory.poke(memAddress+128, 16380);
-    do Memory.poke(memAddress+160, 8184);
-    do Memory.poke(memAddress+192, 4080);
-    do Memory.poke(memAddress+224, 2016);
-    do Memory.poke(memAddress+256, 2016);
-    do Memory.poke(memAddress+288, 2016);
-    do Memory.poke(memAddress+320, 2016);
-    do Memory.poke(memAddress+352, 2016);
-    do Memory.poke(memAddress+384, 16380);
-    do Memory.poke(memAddress+416, 13740);
-    do Memory.poke(memAddress+448, 29646);
-    do Memory.poke(memAddress+480, -22123);
+    do Memory.poke(memAddress+480, ~32767);
     return;
   }
 
   // Left facing frog
-  function void drawLeftFacingFrog(int location) {
-    let memAddress = 16384+location;
+  method void drawLeftFacingFrog() {
+    var int memAddress;
+    let memAddress = 16384+currentLocation;
     do Memory.poke(memAddress+0, 1);
     do Memory.poke(memAddress+32, 4098);
     do Memory.poke(memAddress+64, -18417);
@@ -87,6 +97,28 @@ class FrogSprite {
     do Memory.poke(memAddress+416, -18417);
     do Memory.poke(memAddress+448, 4098);
     do Memory.poke(memAddress+480, 1);
+    return;
+  }
+
+  method void clearPaint() {
+    var int memAddress;
+    let memAddress = 16384+currentLocation;
+    do Memory.poke(memAddress+0, 0);
+    do Memory.poke(memAddress+32, 0);
+    do Memory.poke(memAddress+64, 0);
+    do Memory.poke(memAddress+96, 0);
+    do Memory.poke(memAddress+128, 0);
+    do Memory.poke(memAddress+160, 0);
+    do Memory.poke(memAddress+192, 0);
+    do Memory.poke(memAddress+224, 0);
+    do Memory.poke(memAddress+256, 0);
+    do Memory.poke(memAddress+288, 0);
+    do Memory.poke(memAddress+320, 0);
+    do Memory.poke(memAddress+352, 0);
+    do Memory.poke(memAddress+384, 0);
+    do Memory.poke(memAddress+416, 0);
+    do Memory.poke(memAddress+448, 0);
+    do Memory.poke(memAddress+480, 0);
     return;
   }
 }

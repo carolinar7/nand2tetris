@@ -1,0 +1,48 @@
+class FrogGame {
+  field Frog frog;
+  field int direction;
+
+  constructor FrogGame new() {
+    let direction = 1;
+    let frog = Frog.new(7440);
+    return this;
+  }
+
+  method void dispose() {
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  method void moveFrog() {
+    if (direction = 1) { do frog.faceForward(); }
+    if (direction = 2) { do frog.faceRight(); }
+    if (direction = 3) { do frog.faceLeft(); }
+    do Sys.wait(5);  // delays the next movement
+    return;
+   }
+
+  method void run() {
+    var char key;  // the key currently pressed by the user
+    var boolean exit;
+    let exit = false;
+    
+    while (~exit) {
+      // waits for a key to be pressed
+      while (key = 0) {
+        let key = Keyboard.keyPressed();
+        do moveFrog();
+      }
+      if (key = 81)  { let exit = true; }     // q key
+      if (key = 131) { let direction = 1; }   // up arrow
+      if (key = 132) { let direction = 2; }   // right arrow
+      if (key = 130) { let direction = 3; }   // left arrow
+
+      // waits for the key to be released
+      while (~(key = 0)) {
+        let key = Keyboard.keyPressed();
+        do moveFrog();
+      }
+    }
+     return;
+  }
+}
