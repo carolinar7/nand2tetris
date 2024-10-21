@@ -1,27 +1,138 @@
 function Frog.new 0
-    push constant 2
+    push constant 4
     call Memory.alloc 1
     pop pointer 0
     push argument 0
+    pop this 1
+    push argument 1
+    pop this 2
+    push argument 0
+    push argument 1
+    call PositionHelpers.getAddressFromCoordinates 2
     pop this 0
     push constant 1
-    pop this 1
+    pop this 3
     push pointer 0
-    call Frog.faceForward 1
+    call Frog.faceUp 1
     pop temp 0
     push pointer 0
     return
-function Frog.faceForward 0
+function Frog.moveForward 0
+    push argument 0
+    pop pointer 0
+    push pointer 0
+    call Frog.clearPaint 1
+    pop temp 0
+    push argument 1
+    push constant 1
+    eq
+    not
+    if-goto L1
+    push pointer 0
+    call Frog.moveUp 1
+    pop temp 0
+    goto L0
+label L1
+label L0
+    push argument 1
+    push constant 2
+    eq
+    not
+    if-goto L3
+    push pointer 0
+    call Frog.moveRight 1
+    pop temp 0
+    goto L2
+label L3
+label L2
+    push argument 1
+    push constant 3
+    eq
+    not
+    if-goto L5
+    push pointer 0
+    call Frog.moveLeft 1
+    pop temp 0
+    goto L4
+label L5
+label L4
+    push constant 0
+    return
+function Frog.faceDirection 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push constant 1
+    eq
+    not
+    if-goto L7
+    push pointer 0
+    call Frog.faceUp 1
+    pop temp 0
+    goto L6
+label L7
+label L6
+    push argument 1
+    push constant 2
+    eq
+    not
+    if-goto L9
+    push pointer 0
+    call Frog.faceRight 1
+    pop temp 0
+    goto L8
+label L9
+label L8
+    push argument 1
+    push constant 3
+    eq
+    not
+    if-goto L11
+    push pointer 0
+    call Frog.faceLeft 1
+    pop temp 0
+    goto L10
+label L11
+label L10
+    push constant 0
+    return
+function Frog.move 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push this 3
+    eq
+    not
+    if-goto L13
+    push pointer 0
+    push argument 1
+    call Frog.moveForward 2
+    pop temp 0
+    goto L12
+label L13
+    push pointer 0
+    push argument 1
+    call Frog.faceDirection 2
+    pop temp 0
+label L12
+    push constant 0
+    return
+function Frog.getDirection 0
+    push argument 0
+    pop pointer 0
+    push this 3
+    return
+function Frog.faceUp 0
     push argument 0
     pop pointer 0
     push pointer 0
     call Frog.clearPaint 1
     pop temp 0
     push pointer 0
-    call Frog.drawForwardFacingFrog 1
+    call Frog.drawUpFacingFrog 1
     pop temp 0
     push constant 1
-    pop this 1
+    pop this 3
     push constant 0
     return
 function Frog.faceRight 0
@@ -34,7 +145,7 @@ function Frog.faceRight 0
     call Frog.drawRightFacingFrog 1
     pop temp 0
     push constant 2
-    pop this 1
+    pop this 3
     push constant 0
     return
 function Frog.faceLeft 0
@@ -47,10 +158,58 @@ function Frog.faceLeft 0
     call Frog.drawLeftFacingFrog 1
     pop temp 0
     push constant 3
-    pop this 1
+    pop this 3
     push constant 0
     return
-function Frog.drawForwardFacingFrog 1
+function Frog.moveUp 0
+    push argument 0
+    pop pointer 0
+    push this 2
+    push constant 10
+    sub
+    pop this 2
+    push this 1
+    push this 2
+    call PositionHelpers.getAddressFromCoordinates 2
+    pop this 0
+    push pointer 0
+    call Frog.drawUpFacingFrog 1
+    pop temp 0
+    push constant 0
+    return
+function Frog.moveRight 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push constant 10
+    add
+    pop this 1
+    push this 1
+    push this 2
+    call PositionHelpers.getAddressFromCoordinates 2
+    pop this 0
+    push pointer 0
+    call Frog.drawRightFacingFrog 1
+    pop temp 0
+    push constant 0
+    return
+function Frog.moveLeft 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push constant 10
+    sub
+    pop this 1
+    push this 1
+    push this 2
+    call PositionHelpers.getAddressFromCoordinates 2
+    pop this 0
+    push pointer 0
+    call Frog.drawLeftFacingFrog 1
+    pop temp 0
+    push constant 0
+    return
+function Frog.drawUpFacingFrog 1
     push argument 0
     pop pointer 0
     push constant 16384

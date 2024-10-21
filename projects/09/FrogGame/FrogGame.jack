@@ -4,7 +4,7 @@ class FrogGame {
 
   constructor FrogGame new() {
     let direction = 1;
-    let frog = Frog.new(7440);
+    let frog = Frog.new(256, 234);
     return this;
   }
 
@@ -14,9 +14,7 @@ class FrogGame {
   }
 
   method void moveFrog() {
-    if (direction = 1) { do frog.faceForward(); }
-    if (direction = 2) { do frog.faceRight(); }
-    if (direction = 3) { do frog.faceLeft(); }
+    do frog.move(direction);
     do Sys.wait(5);  // delays the next movement
     return;
    }
@@ -30,7 +28,6 @@ class FrogGame {
       // waits for a key to be pressed
       while (key = 0) {
         let key = Keyboard.keyPressed();
-        do moveFrog();
       }
       if (key = 81)  { let exit = true; }     // q key
       if (key = 131) { let direction = 1; }   // up arrow

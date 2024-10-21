@@ -1,40 +1,96 @@
 // Class representing the Frog art
 class Frog {
-  field int currentLocation;
+  field int currentAddress;
+  field int x_position;
+  field int y_position;
   field int direction;
 
-  constructor Frog new(int currLoc) {
-    let currentLocation = currLoc;
+  constructor Frog new(int x, int y) {
+    let x_position = x;
+    let y_position = y;
+    let currentAddress = PositionHelpers.getAddressFromCoordinates(x, y);
     let direction = 1;
-    do faceForward();
+    do faceUp();
     return this;
   }
 
-  method void faceForward() {
+  method void moveForward(int new_direction) {
+    if (new_direction = 1) { do moveUp(); }
+    if (new_direction = 2) { do moveRight(); }
+    if (new_direction = 3) { do moveLeft(); }
+    return;
+  }
+
+  method void faceDirection(int new_direction) {
+    if (new_direction = 1) { do faceUp(); }
+    if (new_direction = 2) { do faceRight(); }
+    if (new_direction = 3) { do faceLeft(); }
+    return;
+  }
+
+  method void move(int new_direction) {
     do clearPaint();
-    do drawForwardFacingFrog();
+    if (new_direction = direction) {
+      do moveForward(new_direction);
+    } else {
+      do faceDirection(new_direction);
+    }
+    return;
+  }
+
+  method int getDirection() {
+    return direction;
+  }
+
+  method void faceUp() {
+    do drawUpFacingFrog();
     let direction = 1;
     return;
   }
   
   method void faceRight() {
-    do clearPaint();
     do drawRightFacingFrog();
     let direction = 2;
     return;
   }
 
   method void faceLeft() {
-    do clearPaint();
     do drawLeftFacingFrog();
     let direction = 3;
     return;
   }
 
-  // Forward facing frog
-  method void drawForwardFacingFrog() {
+  // TODO: We should avoid the pattern of adding
+  // both coordinate moving logic and drawing logic
+  // together. This makes it more difficult to
+  // reconcile events that happened during the game.
+  // For now, let's continue with this bad practice
+  // and clean up later.
+  method void moveUp() {
+    let y_position = y_position - 10;
+    let currentAddress = PositionHelpers.getAddressFromCoordinates(x_position, y_position);
+    do drawUpFacingFrog();
+    return;
+  }
+
+  method void moveRight() {
+    let x_position = x_position + 10;
+    let currentAddress = PositionHelpers.getAddressFromCoordinates(x_position, y_position);
+    do drawRightFacingFrog();
+    return;
+  }
+
+  method void moveLeft() {
+    let x_position = x_position - 10;
+    let currentAddress = PositionHelpers.getAddressFromCoordinates(x_position, y_position);
+    do drawLeftFacingFrog();
+    return;
+  }
+
+  // Up facing frog
+  method void drawUpFacingFrog() {
     var int memAddress;
-    let memAddress = 16384+currentLocation;
+    let memAddress = 16384+currentAddress;
     do Memory.poke(memAddress+0, -22123);
     do Memory.poke(memAddress+32, 29646);
     do Memory.poke(memAddress+64, 13740);
@@ -57,7 +113,7 @@ class Frog {
   // Right facing frog
   method void drawRightFacingFrog() {
     var int memAddress;
-    let memAddress = 16384+currentLocation;
+    let memAddress = 16384+currentAddress;
     do Memory.poke(memAddress+0, ~32767);
     do Memory.poke(memAddress+32, 16392);
     do Memory.poke(memAddress+64, -4067);
@@ -80,7 +136,7 @@ class Frog {
   // Left facing frog
   method void drawLeftFacingFrog() {
     var int memAddress;
-    let memAddress = 16384+currentLocation;
+    let memAddress = 16384+currentAddress;
     do Memory.poke(memAddress+0, 1);
     do Memory.poke(memAddress+32, 4098);
     do Memory.poke(memAddress+64, -18417);
@@ -102,7 +158,7 @@ class Frog {
 
   method void clearPaint() {
     var int memAddress;
-    let memAddress = 16384+currentLocation;
+    let memAddress = 16384+currentAddress;
     do Memory.poke(memAddress+0, 0);
     do Memory.poke(memAddress+32, 0);
     do Memory.poke(memAddress+64, 0);

@@ -1,0 +1,8 @@
+class PositionHelpers {
+    // address = 32 * y + x / 16
+    function int getAddressFromCoordinates(int x, int y) {
+        var int address;
+        let address = (32 * y) + (x / 16);
+        return address;
+    }
+}

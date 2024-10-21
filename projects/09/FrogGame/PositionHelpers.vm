@@ -1,0 +1,11 @@
+function PositionHelpers.getAddressFromCoordinates 1
+    push constant 32
+    push argument 1
+    call Math.multiply 2
+    push argument 0
+    push constant 16
+    call Math.divide 2
+    add
+    pop local 0
+    push local 0
+    return
